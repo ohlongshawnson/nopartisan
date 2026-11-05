@@ -46,7 +46,7 @@ Pure matching and validation live in `extension/core.js`; `content.js` handles s
 
 Future collectors belong on Environment B, the external automation server. This repository does not install collectors, cron entries, services, or production background jobs on the development workstation. Future work: source collection → candidate extraction → false-positive validation → comparison → reviewed GitHub proposals → approved publication. No automatic keyword publishing has been configured.
 
-No GitHub repository has been created or code pushed yet. License: MIT.
+No GitHub repository has been created or code pushed yet. Licensed under the [MIT License](LICENSE).
 
 ## X filtering diagnostics
 

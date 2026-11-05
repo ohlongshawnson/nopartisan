@@ -8,9 +8,11 @@ version = json.loads((root/'extension/manifest.json').read_text())['version']
 out = root/f'dist/nopartisan-{version}.zip'
 out.parent.mkdir(exist_ok=True)
 with ZipFile(out, 'w') as archive:
-    for path in sorted((root/'extension').rglob('*')):
-        if path.is_file():
-            info = ZipInfo(path.relative_to(root/'extension').as_posix(), date_time=(2026,1,1,0,0,0))
-            info.compress_type = ZIP_DEFLATED
-            archive.writestr(info, path.read_bytes())
+    files = {path.relative_to(root/'extension').as_posix(): path
+             for path in (root/'extension').rglob('*') if path.is_file()}
+    files['LICENSE'] = root/'LICENSE'
+    for name, path in sorted(files.items()):
+        info = ZipInfo(name, date_time=(2026,1,1,0,0,0))
+        info.compress_type = ZIP_DEFLATED
+        archive.writestr(info, path.read_bytes())
 print(out)
