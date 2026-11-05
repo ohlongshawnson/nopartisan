@@ -1,0 +1,23 @@
+:root { color-scheme: light dark; font: 14px/1.45 system-ui, sans-serif; --accent: light-dark(#16634d, #82d8b9); --muted: light-dark(#59635f, #b4bfb9); --line: light-dark(#dce3df, #414b46); }
+* { box-sizing: border-box; }
+body { width: 340px; margin: 0; background: light-dark(#fafcfb, #1b211e); color: light-dark(#1d2923, #eef4f0); }
+header { display: flex; align-items: center; gap: 12px; padding: 22px 20px 18px; border-bottom: 1px solid var(--line); }
+.mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: var(--accent); color: light-dark(#fff, #18261f); font-size: 19px; font-weight: 850; letter-spacing: -1px; }
+h1 { font-size: 20px; line-height: 1.2; margin: 0 0 4px; letter-spacing: -.5px; }
+header p { margin: 0; color: var(--muted); font-size: 12px; }
+main { padding: 4px 20px 16px; }
+.toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 17px 0; cursor: pointer; border-bottom: 1px solid var(--line); }
+strong, small { display: block; }
+strong { font-size: 14px; font-weight: 650; }
+small { margin-top: 4px; color: var(--muted); font-size: 12px; }
+input[type=checkbox] { appearance: none; flex: 0 0 36px; width: 36px; height: 21px; margin: 0; border: 1px solid var(--muted); border-radius: 12px; background: light-dark(#dce3df, #424c46); cursor: pointer; }
+input[type=checkbox]::before { content: ''; display: block; width: 15px; height: 15px; margin: 2px; border-radius: 50%; background: light-dark(#fff, #e4ebe6); }
+input[type=checkbox]:checked { border-color: var(--accent); background: var(--accent); }
+input[type=checkbox]:checked::before { transform: translateX(15px); background: light-dark(#fff, #18261f); }
+input:disabled { opacity: .5; cursor: wait; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+#status { min-height: 20px; margin: 12px 0; color: var(--muted); font-size: 12px; }
+button { display: flex; justify-content: space-between; width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-weight: 600; background: light-dark(#fff, #29332d); color: inherit; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+.privacy { margin: 12px 0 0; text-align: center; font-size: 11px; color: var(--muted); }
+@media (forced-colors: active) { input[type=checkbox] { appearance: auto; } input[type=checkbox]::before { display: none; } }

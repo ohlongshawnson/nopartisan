@@ -1,0 +1,71 @@
+{
+  "manifest_version": 3,
+  "name": "NOpartisan",
+  "version": "0.1.0",
+  "description": "No left. No right. No thanks. Filter political feed posts locally.",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://www.reddit.com/*",
+    "https://x.com/*",
+    "https://www.facebook.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://raw.githubusercontent.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "core.js",
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.reddit.com/*",
+        "https://x.com/*",
+        "https://www.facebook.com/*"
+      ],
+      "js": [
+        "core.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ]
+    }
+  ],
+  "action": {
+    "default_title": "NOpartisan",
+    "default_popup": "popup.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "nopartisan@example.org",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "keywords.json"
+      ],
+      "matches": [
+        "https://www.reddit.com/*",
+        "https://x.com/*",
+        "https://www.facebook.com/*"
+      ]
+    }
+  ]
+}
