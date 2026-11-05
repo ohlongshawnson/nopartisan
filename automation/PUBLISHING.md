@@ -15,6 +15,8 @@ president, Cabinet/selected Cabinet-level positions, governors, reviewed parties
 and committees, two clearly political congressional organizations, and a small
 reviewed set of election/campaign/legislative phrases. This is useful initial
 coverage of those categories, not a claim to cover all political organizations.
+Governor affiliations require a nonempty source-declared label, not membership
+in a fixed list of party names; minor/new parties follow the same evidence rule.
 
 Publication is additive: the complete current collection is deduplicated against
 all previously published keywords. Former officeholders are not newly collected

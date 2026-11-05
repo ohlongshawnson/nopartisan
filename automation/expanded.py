@@ -297,15 +297,16 @@ def governor_profile(raw, record):
     require('Current' in labels.get('Terms',''), 'governor profile has no current term')
     current = re.search(r'([A-Za-z]+ \d{1,2}, \d{4})\s*-\s*Current', labels['Terms'])
     require(current and datetime.strptime(current[1],'%B %d, %Y').date() <= date.today(), 'governor term has not started')
-    require(labels.get('Party') in {'Democratic','Democrat','Republican','Independent','New Progressive','New Progressive Party','Popular Democratic Party'},
-            'missing/unrecognized governor affiliation')
+    # A declared affiliation is required; inclusion never depends on which party
+    # it names. New/minor parties follow the same current-office evidence rule.
+    affiliation=p.field(labels.get('Party'),'governor affiliation',100)
     labels_for_site={"Governor's Website","Governor’s Website","Governer's Website","Government Website","Website"}
     official = [a.attrs['href'] for a in root.all('a') if a.text() in labels_for_site]
     require(len(official)<=1, 'duplicate governor official website links')
     # Some official legacy links are HTTP. Store as evidence only, never request them.
     if official:
         require(urlsplit(official[0]).scheme in {'http','https'} and urlsplit(official[0]).hostname, 'invalid governor website')
-    return {'affiliation':{'Democratic':'Democrat'}.get(labels['Party'],labels['Party']),'official_url':official[0] if official else None,'terms':labels['Terms'],
+    return {'affiliation':{'Democratic':'Democrat'}.get(affiliation,affiliation),'official_url':official[0] if official else None,'terms':labels['Terms'],
             'website_status':'listed by NGA; not fetched' if official else 'not supplied by NGA profile'}
 
 

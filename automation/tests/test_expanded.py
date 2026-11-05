@@ -128,6 +128,9 @@ class ExpansionTests(unittest.TestCase):
         roster=e.governors(self.raw[s['url']],s['checks'])
         alabama=next(r for r in roster if r['state']=='Alabama')
         raw=self.raw[alabama['profile_url']]
+        # Synthetic affiliation change: apply the same evidence rule to a minor party.
+        minor=raw.replace(b'</label>Republican',b'</label>Libertarian')
+        self.assertEqual(e.governor_profile(minor,alabama)['affiliation'],'Libertarian')
         for modified in [raw.replace(b'Current',b'2023'),raw.replace(b'Kay Ivey',b'Wrong Person'),
                          raw.replace(b'January 16, 2023 - Current',b'January 16, 2027 - Current')]:
             with self.assertRaises(ValueError):e.governor_profile(modified,alabama)
