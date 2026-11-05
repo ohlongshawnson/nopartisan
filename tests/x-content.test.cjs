@@ -8,9 +8,9 @@ async function setup({ custom = ['Mike Lee', 'Republicans', 'mike lee'], failFet
   const w = dom.window; let listener; const logs = [], errors = [];
   let settings = { enabled: true, custom };
   w.console.info = (...args) => logs.push(args); w.console.error = (...args) => errors.push(args);
-  w.browser = { runtime: { getURL: p => `moz-extension://test/${p}` }, storage: { local: { get: async () => ({ settings }) }, onChanged: { addListener: f => { listener = f; } } } };
-  w.fetch = async () => { if (failFetch) throw new TypeError('NetworkError when attempting to fetch resource.'); return { json: async () => JSON.parse(fs.readFileSync('extension/keywords.json', 'utf8')) }; };
-  w.eval(fs.readFileSync('extension/core.js', 'utf8')); w.eval(fs.readFileSync('extension/content.js', 'utf8'));
+  w.browser = { runtime: { id: 'test', onMessage: { addListener() {} }, getURL: p => `moz-extension://test/${p}` }, storage: { local: { get: async () => ({ settings }) }, onChanged: { addListener: f => { listener = f; } } } };
+  w.fetch = async () => { if (failFetch) throw new TypeError('NetworkError when attempting to fetch resource.'); return { json: async () => JSON.parse(fs.readFileSync('tests/fixtures/starter-keywords.json', 'utf8')) }; };
+  w.eval(fs.readFileSync('extension/core.js', 'utf8')); w.eval(fs.readFileSync('extension/x-adapter.js','utf8')); w.eval(fs.readFileSync('extension/content.js', 'utf8'));
   await wait();
   return { w, logs, errors, close: () => w.close(), save: async update => { settings = { ...settings, ...update }; listener({ settings: { newValue: settings } }, 'local'); await wait(); } };
 }
@@ -22,7 +22,7 @@ test('Mike Lee: exact phrase, mixed case, author, quoted content, duplicate keyw
     for (const id of ['neutral', 'neutralTrend', 'timeline', 'sidebar', 'search']) assert.equal(hidden(w, id), false, id);
     assert.equal(w.document.querySelectorAll('.nopartisan-notice').length, 6);
     assert.equal(w.document.querySelector('#nestedQuote article').classList.contains('nopartisan-filtered'), false);
-    assert.deepEqual(JSON.parse(JSON.stringify(w.NOpartisanDiagnostics)), { build: 'hide-placeholder-1', initialized: true, enabled: true, keywordCount: 12, candidates: 8, matched: 6, hidden: 6, runtimeErrors: 0 });
+    assert.deepEqual(JSON.parse(JSON.stringify(w.NOpartisanDiagnostics)), { build: 'post-inspection-1', initialized: true, enabled: true, keywordCount: 12, candidates: 8, matched: 6, hidden: 6, runtimeErrors: 0 });
     assert.equal(ctx.errors.length, 0);
   } finally { ctx.close(); }
 });
@@ -74,7 +74,7 @@ test('manifest makes the fetched bundled list accessible on every supported orig
   assert.ok(entry, 'Firefox MV3 blocks the packaged-file fetch without this declaration');
   assert.deepEqual(entry.matches, manifest.content_scripts[0].matches);
   assert.deepEqual(entry.resources, ['keywords.json']);
-  assert.deepEqual(manifest.content_scripts[0].js, ['core.js', 'content.js']);
+  assert.deepEqual(manifest.content_scripts[0].js, ['core.js', 'x-adapter.js', 'content.js']);
   assert.ok(manifest.host_permissions.includes('https://x.com/*'));
 });
 

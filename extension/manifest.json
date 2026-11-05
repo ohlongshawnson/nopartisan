@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "NOpartisan",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "No left. No right. No thanks. Filter political feed posts locally.",
   "permissions": [
     "storage",
-    "alarms"
+    "alarms",
+    "menus"
   ],
   "host_permissions": [
     "https://www.reddit.com/*",
@@ -30,6 +31,7 @@
       ],
       "js": [
         "core.js",
+        "x-adapter.js",
         "content.js"
       ],
       "css": [
@@ -39,7 +41,8 @@
   ],
   "action": {
     "default_title": "NOpartisan",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": "Blue NOP Tech Logo.png"
   },
   "options_ui": {
     "page": "options.html",
@@ -47,7 +50,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "nopartisan@example.org",
+      "id": "nopartisan@ohlongshawnson.github.io",
       "strict_min_version": "142.0",
       "data_collection_permissions": {
         "required": [
@@ -67,5 +70,8 @@
         "https://www.facebook.com/*"
       ]
     }
-  ]
+  ],
+  "icons": {
+    "1254": "Blue NOP Tech Logo.png"
+  }
 }

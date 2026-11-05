@@ -42,3 +42,26 @@ browser.runtime.onMessage.addListener((message, sender) => {
   if (sender.id !== browser.runtime.id || sender.url !== browser.runtime.getURL('options.html')) return;
   if (message.type === 'update') return update().then(version => ({ version }), error => ({ error: error.message }));
 });
+
+// User-initiated post inspection. Reports never leave the browser or go to disk storage.
+const inspectionMenu = 'nopartisan-why-visible';
+async function registerInspectionMenu() {
+  await browser.menus.remove(inspectionMenu).catch(() => {});
+  browser.menus.create({ id: inspectionMenu, title: 'NOpartisan: Why is this post visible?',
+    contexts: ['all'], documentUrlPatterns: ['https://x.com/*'] });
+}
+browser.runtime.onInstalled.addListener(registerInspectionMenu);
+browser.runtime.onStartup.addListener(registerInspectionMenu);
+browser.menus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId !== inspectionMenu || !Number.isInteger(tab?.id)) return;
+  let report;
+  try {
+    report = await browser.tabs.sendMessage(tab.id, { type: 'inspectPost', targetElementId: info.targetElementId }, { frameId: info.frameId ?? 0 });
+  } catch {
+    report = { error: 'Could not reach the content script. Reload NOpartisan and refresh the X tab, then try again.' };
+  }
+  const id = crypto.randomUUID();
+  // Separate keys prevent one inspection from consuming another's report.
+  await browser.storage.session.set({ [`postInspection:${id}`]: report || { error: 'The content script returned no report. Refresh X and try again.' } });
+  await browser.tabs.create({ url: browser.runtime.getURL(`inspection.html#${id}`) });
+});

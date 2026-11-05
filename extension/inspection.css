@@ -1,0 +1,5 @@
+:root { color-scheme: light dark; font: 16px/1.6 system-ui, sans-serif; }
+main { max-width: 880px; margin: 32px auto; padding: 0 24px; }
+h1 { font-size: 28px; } h2 { font-size: 18px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; border: 1px solid #888; border-radius: 8px; font: 14px/1.6 ui-monospace, monospace; }
+#summary { font-weight: 650; }

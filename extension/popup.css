@@ -2,7 +2,7 @@
 * { box-sizing: border-box; }
 body { width: 340px; margin: 0; background: light-dark(#fafcfb, #1b211e); color: light-dark(#1d2923, #eef4f0); }
 header { display: flex; align-items: center; gap: 12px; padding: 22px 20px 18px; border-bottom: 1px solid var(--line); }
-.mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: var(--accent); color: light-dark(#fff, #18261f); font-size: 19px; font-weight: 850; letter-spacing: -1px; }
+.mark { display: block; flex: 0 0 52px; width: 52px; height: 52px; object-fit: contain; }
 h1 { font-size: 20px; line-height: 1.2; margin: 0 0 4px; letter-spacing: -.5px; }
 header p { margin: 0; color: var(--muted); font-size: 12px; }
 main { padding: 4px 20px 16px; }
