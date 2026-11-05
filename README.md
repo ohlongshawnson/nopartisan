@@ -17,9 +17,9 @@ Filtering matches whole words and phrases without case sensitivity, with Unicode
 
 ## Keyword updates
 
-The extension works offline with `extension/keywords.json`. To enable GitHub downloads, publish this repository under your chosen owner and enter:
+The extension works offline with `extension/keywords.json`. To enable GitHub downloads, enter:
 
-`https://raw.githubusercontent.com/OWNER/nopartisan/main/keywords/politics.json`
+`https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json`
 
 Save settings to grant optional GitHub access, then download manually or enable daily checks. Checks run only while Firefox is running. This is an extension update check, not a collection service. The repository owner is deliberately not hard-coded. Only raw GitHub URLs inside a `nopartisan` repository are accepted. Redirects, oversized responses, and malformed lists fail without replacing the last successful list. Changing or clearing the source resets the downloaded list. Clearing the source also removes GitHub access.
 
@@ -46,7 +46,7 @@ Pure matching and validation live in `extension/core.js`; `content.js` handles s
 
 Future collectors belong on Environment B, the external automation server. This repository does not install collectors, cron entries, services, or production background jobs on the development workstation. Future work: source collection → candidate extraction → false-positive validation → comparison → reviewed GitHub proposals → approved publication. No automatic keyword publishing has been configured.
 
-No GitHub repository has been created or code pushed yet. Licensed under the [MIT License](LICENSE).
+Repository: [ohlongshawnson/nopartisan](https://github.com/ohlongshawnson/nopartisan). Licensed under the [MIT License](LICENSE).
 
 ## X filtering diagnostics
 
@@ -61,3 +61,16 @@ In settings, uncheck **Show a placeholder for filtered content** and save to hid
 The toolbar popup saves both quick toggles immediately, using the same global preferences as full settings. Changes apply to already-open supported tabs. Pausing filtering preserves your keywords and other settings. No new browser permissions are required.
 
 The initial Git release is tagged `v0.1`; the extension and package use version `0.1.0`. Earlier 0.1.x numbers in the debugging record refer to development builds before this first commit.
+
+## Clone onto the automation server
+
+On the OMV server, choose an existing persistent project directory, then run:
+
+```sh
+git clone https://github.com/ohlongshawnson/nopartisan.git
+cd nopartisan
+git log -1 --oneline
+git tag --list
+```
+
+Cloning does not install or start any services. Server-side automation should be developed in this repository, separately from the working extension. Push access will require separate authentication on that machine; do not copy workstation credentials into the repository or a Docker image.
