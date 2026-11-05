@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='utf-8'?>
+<contact_information><member>
+        <member_full>Barrasso (R-WY)</member_full>
+        <last_name>Barrasso</last_name>
+        <first_name>John</first_name>
+        <party>R</party>
+        <state>WY</state>
+        <address>307 Dirksen Senate Office Building Washington DC 20510</address>
+        <phone>(202) 224-6441</phone>
+        <email>https://www.barrasso.senate.gov/public/index.cfm/contact-form</email>
+        <website>https://www.barrasso.senate.gov</website>
+        <class>Class I</class>
+        <bioguide_id>B001261</bioguide_id>
+        <leadership_position>Majority Whip</leadership_position>
+    </member><member>
+        <member_full>Cantwell (D-WA)</member_full>
+        <last_name>Cantwell</last_name>
+        <first_name>Maria</first_name>
+        <party>D</party>
+        <state>WA</state>
+        <address>511 Hart Senate Office Building Washington DC 20510</address>
+        <phone>(202) 224-3441</phone>
+        <email>https://www.cantwell.senate.gov/public/index.cfm/email-maria</email>
+        <website>https://www.cantwell.senate.gov</website>
+        <class>Class I</class>
+        <bioguide_id>C000127</bioguide_id>
+    </member><member>
+        <member_full>King (I-ME)</member_full>
+        <last_name>King</last_name>
+        <first_name>Angus S., Jr.</first_name>
+        <party>I</party>
+        <state>ME</state>
+        <address>133 Hart Senate Office Building Washington DC 20510</address>
+        <phone>(202) 224-5344</phone>
+        <email>https://www.king.senate.gov/contact</email>
+        <website>https://www.king.senate.gov/</website>
+        <class>Class I</class>
+        <bioguide_id>K000383</bioguide_id>
+    </member><member>
+        <member_full>Klobuchar (D-MN)</member_full>
+        <last_name>Klobuchar</last_name>
+        <first_name>Amy</first_name>
+        <party>D</party>
+        <state>MN</state>
+        <address>425 Dirksen Senate Office Building Washington DC 20510</address>
+        <phone>(202) 224-3244</phone>
+        <email>https://www.klobuchar.senate.gov/public/index.cfm/contact</email>
+        <website>https://www.klobuchar.senate.gov/</website>
+        <class>Class I</class>
+        <bioguide_id>K000367</bioguide_id>
+    </member><member>
+        <member_full>Sanders (I-VT)</member_full>
+        <last_name>Sanders</last_name>
+        <first_name>Bernard</first_name>
+        <party>I</party>
+        <state>VT</state>
+        <address>332 Dirksen Senate Office Building Washington DC 20510</address>
+        <phone>(202) 224-5141</phone>
+        <email>https://www.sanders.senate.gov/contact/</email>
+        <website>https://www.sanders.senate.gov/</website>
+        <class>Class I</class>
+        <bioguide_id>S000033</bioguide_id>
+    </member><member>
+        <member_full>Wicker (R-MS)</member_full>
+        <last_name>Wicker</last_name>
+        <first_name>Roger F.</first_name>
+        <party>R</party>
+        <state>MS</state>
+        <address>425 Russell Senate Office Building Washington DC 20510</address>
+        <phone>(202) 224-6253</phone>
+        <email>https://www.wicker.senate.gov/public/index.cfm/contact</email>
+        <website>https://www.wicker.senate.gov</website>
+        <class>Class I</class>
+        <bioguide_id>W000437</bioguide_id>
+    </member></contact_information>

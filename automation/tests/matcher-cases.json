@@ -1,0 +1,39 @@
+{
+  "positive": [
+    "Rep. Alexandria Ocasio-Cortez spoke today.",
+    "Bernie Sanders introduced a plan.",
+    "Chuck Schumer held a briefing.",
+    "President Donald J. Trump signed an order.",
+    "Vice President JD Vance spoke.",
+    "Secretary Scott Bessent testified.",
+    "Gov. Gavin Newsom held a press conference.",
+    "Gov. Bill Lee signed the measure.",
+    "The Democratic National Committee updated its rules.",
+    "The Republican National Committee updated its rules.",
+    "The National Republican Congressional Committee issued a statement.",
+    "The Green Party of the United States announced its platform.",
+    "The Libertarian Party announced its platform.",
+    "The Constitution Party announced its platform.",
+    "The DCCC, DSCC, NRCC and NRSC filed reports.",
+    "The House passed a continuing resolution.",
+    "Campaign finance reports are due.",
+    "Voter registration deadlines were announced.",
+    "A political action committee purchased advertisements."
+  ],
+  "negative": [
+    "John Carter is a science-fiction film.",
+    "Al Green sang Let's Stay Together.",
+    "Bill Lee pitched for the Red Sox.",
+    "John Curtis Christian School won a game.",
+    "Please mark green boxes on the form.",
+    "We bought green party decorations.",
+    "A speaker repaired the cabinet in our house.",
+    "The bill arrived from the primary school.",
+    "My first name is Joe and I live in Washington.",
+    "She likes trumpets, magazines and green tea.",
+    "A celebrity named Taylor Swift released an album.",
+    "We studied photosynthesis and reconciled invoices.",
+    "This example says RNC and PAC without political context.",
+    "The garden has roses, mint and a bowl of cherries."
+  ]
+}

@@ -44,7 +44,7 @@ Pure matching and validation live in `extension/core.js`; `content.js` handles s
 
 ## Separate automation server
 
-Future collectors belong on Environment B, the external automation server. This repository does not install collectors, cron entries, services, or production background jobs on the development workstation. Future work: source collection → candidate extraction → false-positive validation → comparison → reviewed GitHub proposals → approved publication. No automatic keyword publishing has been configured.
+The external automation server runs an [automatic collection and publishing pipeline](automation/PUBLISHING.md): current Congress, executive and governor directories plus reviewed political organizations and specific phrases → categorized validation → a complete schema-1 keyword list → one GitHub commit synchronizing both JSON files. News discoveries remain separate until verified. A dedicated systemd timer runs daily between 04:30 and 04:40 America/Chicago. Failed, empty, invalid or conflicting collection leaves the published list intact. The separate [manual proposal and review workflow](automation/README.md) remains available. Firefox extension development remains on the separate workstation; Firefox downloads updates only when its source and update checks are enabled.
 
 Repository: [ohlongshawnson/nopartisan](https://github.com/ohlongshawnson/nopartisan). Licensed under the [MIT License](LICENSE).
 

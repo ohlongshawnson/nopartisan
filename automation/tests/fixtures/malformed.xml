@@ -1,0 +1,2 @@
+<!DOCTYPE rss [<!ENTITY unsafe SYSTEM "file:///etc/passwd">]>
+<rss><channel><item><title>&unsafe;</title></item></channel></rss>

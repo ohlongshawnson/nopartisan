@@ -1,0 +1,21 @@
+services:
+  pipeline:
+    build:
+      context: ..
+      dockerfile: automation/Dockerfile
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 1.0
+    restart: "no"
+    volumes:
+      - type: bind
+        source: ${NOPARTISAN_DATA_DIR:?Set an absolute persistent data directory writable by UID 10001}
+        target: /data
+        bind:
+          create_host_path: false
+      - ../keywords:/app/keywords:ro
+      - ../extension/keywords.json:/app/extension/keywords.json:ro
