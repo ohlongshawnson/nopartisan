@@ -47,9 +47,10 @@
   }
   function ruleMatcher(rules) {
     const compiled = validateRules(rules).map(rule => ({ id: rule.id, all: rule.all.map(pattern), any: rule.any.map(pattern) }));
-    return text => {
-      const value = normalize(text);
-      return compiled.filter(rule => rule.all.every(p => p.test(value)) && rule.any.some(p => p.test(value))).map(rule => rule.id);
+    return textOrSegments => {
+      const segments = (Array.isArray(textOrSegments) ? textOrSegments : [textOrSegments]).map(normalize);
+      const has = pattern => segments.some(segment => pattern.test(segment));
+      return compiled.filter(rule => rule.all.every(has) && rule.any.some(has)).map(rule => rule.id);
     };
   }
   function sourceURL(value) {

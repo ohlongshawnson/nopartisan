@@ -27,17 +27,19 @@ async function setup(initial) {
     fail: () => { failSave = true; }, optionsOpened: () => optionsOpened, closed: () => closed,
   };
 }
-test('popup defaults and quick toggles preserve keywords and update preferences', async () => {
-  const original = { enabled: true, custom: ['Mike Lee'], source: 'https://raw.githubusercontent.com/owner/nopartisan/main/keywords/politics.json', autoUpdate: true };
+test('popup defaults and quick toggles preserve keywords, contextual rules, and update preferences', async () => {
+  const original = { enabled: true, custom: ['Mike Lee'], rules: [{ id: 'rule-1', all: ['Trump'], any: ['election'] }], source: 'https://raw.githubusercontent.com/owner/nopartisan/main/keywords/politics.json', autoUpdate: true };
   const ctx = await setup(original); const $ = id => ctx.w.document.getElementById(id);
   assert.equal($('showPlaceholders').checked, true);
   await ctx.change('enabled', false);
   assert.equal(ctx.settings().enabled, false);
   assert.deepEqual(ctx.settings().custom, original.custom);
+  assert.deepEqual(ctx.settings().rules, original.rules);
   assert.equal(ctx.settings().source, original.source); assert.equal(ctx.settings().autoUpdate, true);
   assert.match($('status').textContent, /paused/);
   await ctx.change('showPlaceholders', false);
   assert.equal(ctx.settings().showPlaceholders, false); assert.equal(ctx.settings().enabled, false);
+  assert.deepEqual(ctx.settings().rules, original.rules);
   await ctx.external({ ...original, showPlaceholders: true });
   assert.equal($('enabled').checked, true); assert.equal($('showPlaceholders').checked, true);
   assert.equal($('enabled').disabled, false);

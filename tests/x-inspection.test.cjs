@@ -77,7 +77,25 @@ test('inspection identifies a contextual rule match separately from keywords', a
     assert.equal(report.matched, true);
     assert.deepEqual(report.matchedKeywords, []);
     assert.deepEqual(report.matchedRules, ['rule-1']);
+    assert.equal(report.list.contextualRuleCount, 1);
     assert.equal(report.currentlyHidden, true);
+  } finally { ctx.close(); }
+});
+test('inspection reports damaged rules while direct keywords continue filtering', async () => {
+  const ctx = await setup();
+  try {
+    ctx.stored.settings.rules = [{ all: ['Trump'], any: [] }];
+    ctx.changed({ settings: {} });
+    await waitFor(() => ctx.w.NOpartisanDiagnostics.runtimeErrors === 1);
+    const damaged = await ctx.inspect('fullNames');
+    assert.equal(damaged.initialized, true);
+    assert.equal(damaged.currentlyHidden, true);
+    assert.equal(damaged.list.contextualRuleCount, 0);
+    assert.match(damaged.ruleError, /Invalid contextual rule/);
+    ctx.stored.settings.rules = ctx.w.NOpartisan.parseRules('Trump => election');
+    ctx.changed({ settings: {} });
+    await new Promise(resolve => setTimeout(resolve, 160));
+    assert.equal((await ctx.inspect('fullNames')).ruleError, null);
   } finally { ctx.close(); }
 });
 test('diagnosis distinguishes an old downloaded list and reflects list updates in open tabs', async () => {

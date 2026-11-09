@@ -89,6 +89,24 @@ test('editing contextual rules saves locally; invalid rules keep the last valid 
     assert.deepEqual(Array.from(state.settings.rules), []);
   } finally { dom.window.close(); }
 });
+test('invalid saved rules can be repaired without losing older preferences', async () => {
+  const saved = { enabled: false, showPlaceholders: false, custom: ['Mike Lee'], rules: [{ all: ['Trump'], any: [] }], source: 'https://raw.githubusercontent.com/team/nopartisan/main/custom.json', autoUpdate: false };
+  const { dom, state } = await openOptions({ settings: saved });
+  try {
+    const doc = dom.window.document;
+    assert.match(doc.getElementById('listInfo').textContent, /Saved contextual rules are invalid/);
+    assert.equal(doc.getElementById('rules').value, '');
+    doc.getElementById('rules').value = 'Trump => election';
+    doc.getElementById('settings').dispatchEvent(new dom.window.Event('submit', { cancelable: true }));
+    await settle();
+    assert.equal(state.settings.enabled, false);
+    assert.equal(state.settings.showPlaceholders, false);
+    assert.deepEqual(Array.from(state.settings.custom), ['Mike Lee']);
+    assert.equal(state.settings.source, saved.source);
+    assert.equal(state.settings.autoUpdate, false);
+    assert.equal(state.settings.rules[0].any[0], 'election');
+  } finally { dom.window.close(); }
+});
 
 test('daily updates require optional permission; denial keeps filtering usable', async () => {
   const denied = await openOptions({ settings: { enabled: true, custom: ['personal'], source: '', autoUpdate: false }, allow: false });

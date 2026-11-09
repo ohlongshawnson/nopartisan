@@ -14,11 +14,14 @@ async function load(refreshControls = true) {
   ]);
   const settings = { ...NOpartisan.defaults, ...stored.settings };
   const activeList = stored.remoteList ? NOpartisan.validate(stored.remoteList) : bundled;
+  let rules, ruleError = null;
+  try { rules = NOpartisan.validateRules(settings.rules); }
+  catch (error) { rules = []; ruleError = error; }
   if (refreshControls) {
     $('enabled').checked = settings.enabled;
     $('showPlaceholders').checked = settings.showPlaceholders !== false;
     $('custom').value = (settings.custom || []).join('\n');
-    $('rules').value = NOpartisan.formatRules(settings.rules);
+    $('rules').value = ruleError ? '' : NOpartisan.formatRules(rules);
     $('source').value = settings.source || NOpartisan.DEFAULT_SOURCE;
     $('autoUpdate').checked = Boolean(settings.autoUpdate);
   }
@@ -27,8 +30,9 @@ async function load(refreshControls = true) {
   const listSource = stored.remoteList ? 'downloaded' : 'bundled';
   const personalCount = new Set((settings.custom || []).map(NOpartisan.normalize).filter(Boolean)).size;
   const lines = [`Active list: ${listSource}, version ${activeList.version}, ${activeList.keywords.length.toLocaleString()} unique keywords.`];
-  const ruleCount = NOpartisan.validateRules(settings.rules).length;
+  const ruleCount = rules.length;
   lines.push(`${ruleCount} contextual ${ruleCount === 1 ? 'rule' : 'rules'} active.`);
+  if (ruleError) lines.push('Saved contextual rules are invalid. Edit and save them to restore contextual filtering; direct keywords remain active.');
   if (personalCount) lines.push(`${personalCount.toLocaleString()} personal keywords are also active.`);
   lines.push(stored.lastUpdate ? `Last successful download: ${new Date(stored.lastUpdate).toLocaleString()}.` : 'Last successful download: None; the bundled list is ready offline.');
   if (stored.updateError) lines.push(`Latest update failed: ${stored.updateError} The previous valid list remains active.`);

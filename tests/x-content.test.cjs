@@ -3,10 +3,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { JSDOM } = require('jsdom');
 const wait = () => new Promise(resolve => setTimeout(resolve, 160));
-async function setup({ custom = ['Mike Lee', 'Republicans', 'mike lee'], failFetch = false } = {}) {
+async function setup({ custom = ['Mike Lee', 'Republicans', 'mike lee'], rules, failFetch = false } = {}) {
   const dom = new JSDOM(fs.readFileSync('tests/fixtures/x-feed.html', 'utf8'), { url: 'https://x.com/search?q=Mike%20Lee', runScripts: 'outside-only' });
   const w = dom.window; let listener; const logs = [], errors = [];
-  let settings = { enabled: true, custom };
+  let settings = { enabled: true, custom, ...(rules === undefined ? {} : { rules }) };
   w.console.info = (...args) => logs.push(args); w.console.error = (...args) => errors.push(args);
   w.browser = { runtime: { id: 'test', onMessage: { addListener() {} }, getURL: p => `moz-extension://test/${p}` }, storage: { local: { get: async () => ({ settings }) }, onChanged: { addListener: f => { listener = f; } } } };
   w.fetch = async () => { if (failFetch) throw new TypeError('NetworkError when attempting to fetch resource.'); return { json: async () => JSON.parse(fs.readFileSync('tests/fixtures/starter-keywords.json', 'utf8')) }; };
@@ -45,6 +45,17 @@ test('editing contextual rules rescans an already-open X page', async () => {
     assert.equal(hidden(ctx.w, 'neutral'), true);
     await ctx.save({ rules: [] });
     assert.equal(hidden(ctx.w, 'neutral'), false);
+  } finally { ctx.close(); }
+});
+test('invalid stored rules do not stop direct keyword filtering or later rule edits', async () => {
+  const ctx = await setup({ custom: ['Mike Lee'], rules: [{ all: ['Trump'], any: [] }] });
+  try {
+    assert.equal(ctx.w.NOpartisanDiagnostics.initialized, true);
+    assert.equal(hidden(ctx.w, 'exact'), true);
+    assert.equal(ctx.w.NOpartisanDiagnostics.runtimeErrors, 1);
+    await ctx.save({ rules: ctx.w.NOpartisan.parseRules('garden => magazine') });
+    assert.equal(hidden(ctx.w, 'neutral'), true);
+    assert.equal(ctx.errors.length, 1);
   } finally { ctx.close(); }
 });
 test('appended posts and trends filter; disabling restores every hidden element', async () => {
