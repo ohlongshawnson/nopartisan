@@ -9,6 +9,9 @@
 <p>Turn placeholders off to hide matching posts and trends completely. Hidden content will have no Reveal button.</p>
 <label for="custom">Your extra keywords (one phrase per line)</label><textarea id="custom" rows="6" maxlength="120000"></textarea>
 <p>Matches whole words and phrases, regardless of case. Broad terms can hide unrelated posts.</p></section>
+	<section class="card"><h2>Contextual rules</h2>
+	<p>One rule per line: a required term, then any matching context term. Both must appear anywhere in the same post. For example: <code>Trump =&gt; politics, president, election</code>. Leave empty to disable these rules. Extra keywords above still block on their own.</p>
+	<label for="rules">Your contextual rules</label><textarea id="rules" rows="6" maxlength="10000" spellcheck="false"></textarea></section>
 
 <section class="card updates"><h2>Filter list updates</h2>
 <p>Optional downloads bring the latest reviewed list from GitHub. GitHub receives ordinary connection details, such as your IP address, when you download. Feed content and personal keywords are never sent.</p>

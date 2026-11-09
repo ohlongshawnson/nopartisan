@@ -76,7 +76,7 @@ test('inspection identifies a contextual rule match separately from keywords', a
     const report = await ctx.inspect('contextual');
     assert.equal(report.matched, true);
     assert.deepEqual(report.matchedKeywords, []);
-    assert.deepEqual(report.matchedRules, ['trump-political-context']);
+    assert.deepEqual(report.matchedRules, ['rule-1']);
     assert.equal(report.currentlyHidden, true);
   } finally { ctx.close(); }
 });

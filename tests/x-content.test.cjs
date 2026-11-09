@@ -37,6 +37,16 @@ test('saving and removing personal keywords rescans an already-open page', async
     assert.equal(ctx.w.document.querySelectorAll('.nopartisan-notice').length, 0);
   } finally { ctx.close(); }
 });
+test('editing contextual rules rescans an already-open X page', async () => {
+  const ctx = await setup({ custom: [] });
+  try {
+    assert.equal(hidden(ctx.w, 'neutral'), false);
+    await ctx.save({ rules: ctx.w.NOpartisan.parseRules('garden => magazine') });
+    assert.equal(hidden(ctx.w, 'neutral'), true);
+    await ctx.save({ rules: [] });
+    assert.equal(hidden(ctx.w, 'neutral'), false);
+  } finally { ctx.close(); }
+});
 test('appended posts and trends filter; disabling restores every hidden element', async () => {
   const ctx = await setup(); const { w } = ctx;
   try {

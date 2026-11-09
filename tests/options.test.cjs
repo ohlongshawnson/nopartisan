@@ -42,7 +42,8 @@ test('fresh setup reports the complete bundled list and does not request GitHub 
     assert.equal(doc.getElementById('autoUpdate').checked, false);
     assert.equal(doc.getElementById('source').value, 'https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json');
     assert.match(doc.getElementById('listInfo').textContent, new RegExp(`bundled, version ${bundle.version}, ${bundle.keywords.length} unique keywords`));
-    assert.match(doc.getElementById('listInfo').textContent, /Trump plus a political term in the same post/);
+    assert.match(doc.getElementById('listInfo').textContent, /1 contextual rule active/);
+    assert.match(doc.getElementById('rules').value, /^Trump => politics, political, president/);
     assert.match(doc.getElementById('listInfo').textContent, /ready offline/);
     assert.deepEqual(requested, []);
   } finally { dom.window.close(); }
@@ -63,6 +64,29 @@ test('older installations preserve personal terms, custom source, filtering choi
     assert.deepEqual(Array.from(state.settings.custom), ['Mike Lee']);
     assert.equal(state.settings.source, saved.source);
     assert.equal(state.remoteList.version, 'cached');
+  } finally { dom.window.close(); }
+});
+
+test('editing contextual rules saves locally; invalid rules keep the last valid settings', async () => {
+  const { dom, state, requested } = await openOptions();
+  try {
+    const doc = dom.window.document;
+    const rules = doc.getElementById('rules');
+    rules.value = 'Trump => election, deportation\nvote => blue, red';
+    doc.getElementById('settings').dispatchEvent(new dom.window.Event('submit', { cancelable: true }));
+    await settle();
+    assert.equal(state.settings.rules.length, 2);
+    assert.equal(state.settings.rules[1].all[0], 'vote');
+    assert.deepEqual(requested, []);
+    rules.value = 'Trump =>';
+    doc.getElementById('settings').dispatchEvent(new dom.window.Event('submit', { cancelable: true }));
+    await settle();
+    assert.equal(state.settings.rules.length, 2);
+    assert.match(doc.getElementById('status').textContent, /Invalid term/);
+    rules.value = '';
+    doc.getElementById('settings').dispatchEvent(new dom.window.Event('submit', { cancelable: true }));
+    await settle();
+    assert.deepEqual(Array.from(state.settings.rules), []);
   } finally { dom.window.close(); }
 });
 

@@ -14,14 +14,23 @@ test('case, whitespace, Unicode boundaries, and literal punctuation', () => {
 });
 test('contextual rules require all trigger terms and any one context term in either order', () => {
  const matches = core.ruleMatcher([{ id: 'test', all: ['Trump'], any: ['election', 'deportation'] }]);
- assert.deepEqual(matches('Trump discusses the election.'), ['test']);
- assert.deepEqual(matches('Deportation plans from TRUMP.'), ['test']);
+ assert.deepEqual(matches('Trump discusses the election.'), ['rule-1']);
+ assert.deepEqual(matches('Deportation plans from TRUMP.'), ['rule-1']);
  for (const text of ['Trump played a card.', 'An election is tomorrow.', 'Trumpets sounded during the election.']) {
   assert.deepEqual(matches(text), [], text);
  }
  const builtIn = core.ruleMatcher(core.contextualRules);
- assert.deepEqual(builtIn('Politics surrounding Trump.'), ['trump-political-context']);
- assert.deepEqual(builtIn('Trump and the election.'), ['trump-political-context']);
+ assert.deepEqual(builtIn('Politics surrounding Trump.'), ['rule-1']);
+ assert.deepEqual(builtIn('Trump and the election.'), ['rule-1']);
+});
+test('contextual rule text parses, formats, and rejects incomplete rules', () => {
+ const rules = core.parseRules('Trump => politics, election\nvote => blue, red');
+ assert.deepEqual(rules.map(rule => rule.id), ['rule-1', 'rule-2']);
+ assert.equal(core.formatRules(rules), 'Trump => politics, election\nvote => blue, red');
+ assert.deepEqual(core.parseRules(''), []);
+ for (const invalid of ['Trump', 'Trump =>', '=> election', 'Trump => politics, ', 'Trump => politics => election']) {
+  assert.throws(() => core.parseRules(invalid), invalid);
+ }
 });
 test('malformed or oversized remote lists rejected', () => {
  for (const data of [null, {}, {schemaVersion:1,version:'v',keywords:['']}, {schemaVersion:1,version:'v',keywords:['a'.repeat(121)]}]) assert.throws(() => core.validate(data));

@@ -18,6 +18,7 @@ async function load(refreshControls = true) {
     $('enabled').checked = settings.enabled;
     $('showPlaceholders').checked = settings.showPlaceholders !== false;
     $('custom').value = (settings.custom || []).join('\n');
+    $('rules').value = NOpartisan.formatRules(settings.rules);
     $('source').value = settings.source || NOpartisan.DEFAULT_SOURCE;
     $('autoUpdate').checked = Boolean(settings.autoUpdate);
   }
@@ -26,7 +27,8 @@ async function load(refreshControls = true) {
   const listSource = stored.remoteList ? 'downloaded' : 'bundled';
   const personalCount = new Set((settings.custom || []).map(NOpartisan.normalize).filter(Boolean)).size;
   const lines = [`Active list: ${listSource}, version ${activeList.version}, ${activeList.keywords.length.toLocaleString()} unique keywords.`];
-  lines.push('Built-in contextual rule: Trump plus a political term in the same post.');
+  const ruleCount = NOpartisan.validateRules(settings.rules).length;
+  lines.push(`${ruleCount} contextual ${ruleCount === 1 ? 'rule' : 'rules'} active.`);
   if (personalCount) lines.push(`${personalCount.toLocaleString()} personal keywords are also active.`);
   lines.push(stored.lastUpdate ? `Last successful download: ${new Date(stored.lastUpdate).toLocaleString()}.` : 'Last successful download: None; the bundled list is ready offline.');
   if (stored.updateError) lines.push(`Latest update failed: ${stored.updateError} The previous valid list remains active.`);
@@ -41,6 +43,7 @@ async function persistSettings({ askForUpdates = false } = {}) {
   const sourceInput = $('source').value.trim();
   const source = sourceInput ? NOpartisan.sourceURL(sourceInput) : NOpartisan.DEFAULT_SOURCE;
   const custom = $('custom').value.split('\n').map(value => value.trim()).filter(Boolean);
+  const rules = NOpartisan.parseRules($('rules').value);
   if (custom.length) NOpartisan.validate({ schemaVersion: 1, version: 'personal', keywords: custom });
   // Request permission before the first await so Firefox sees this as a direct user action.
   const permissionRequest = requestedAutoUpdate || askForUpdates
@@ -55,7 +58,7 @@ async function persistSettings({ askForUpdates = false } = {}) {
     ...NOpartisan.defaults, ...old,
     enabled: $('enabled').checked,
     showPlaceholders: $('showPlaceholders').checked,
-    custom, source, autoUpdate
+    custom, rules, source, autoUpdate
   } });
   if (requestedAutoUpdate && !granted) $('autoUpdate').checked = false;
   await load();

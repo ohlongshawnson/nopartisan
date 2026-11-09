@@ -18,7 +18,7 @@ console.info('[NOpartisan] content script started', diagnostics.build);
   let activeKeywords = [], list = null, previousSummary, initializationError = null;
   const revealed = new WeakMap(), notices = new Map(), managed = new Set();
   const extract = post => isX ? X.extract(post) : { segments: [X.text(post)] };
-  const matchRules = NOpartisan.ruleMatcher(NOpartisan.contextualRules);
+  let matchRules = NOpartisan.ruleMatcher(NOpartisan.contextualRules);
   const contextualMatches = extracted => matchRules(extracted.segments.join(' '));
   const signature = (post, extracted) => JSON.stringify([isX ? X.identity(post) : null, extracted.segments]);
   function removeNotice(post) { notices.get(post)?.remove(); notices.delete(post); }
@@ -67,6 +67,7 @@ console.info('[NOpartisan] content script started', diagnostics.build);
     showPlaceholders = settings.showPlaceholders !== false;
     activeKeywords = [...new Set([...base.keywords, ...settings.custom].map(NOpartisan.normalize).filter(Boolean))];
     matches = NOpartisan.matcher(activeKeywords);
+    matchRules = NOpartisan.ruleMatcher(settings.rules);
     list = { source: stored.remoteList ? 'downloaded' : 'bundled', version: base.version, keywordCount: base.keywords.length,
       personalKeywordCount: new Set(settings.custom.map(NOpartisan.normalize).filter(Boolean)).size, activeKeywordCount: activeKeywords.length,
       configuredSource: settings.source, lastDownload: stored.lastUpdate || null, updateError: stored.updateError || null };
