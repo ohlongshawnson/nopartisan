@@ -2,13 +2,13 @@
 
 **No left. No right. No thanks.**
 
-A privacy-focused Firefox extension that filters political feed posts regardless of party, ideology, or viewpoint. Early development: text filtering for Reddit, X, and Facebook. The bundled list is a snapshot of the server-published list; keyword coverage remains incomplete and false positives are possible.
+A privacy-focused Firefox extension that filters political feed posts regardless of party, ideology, or viewpoint. It supports Reddit, X, and Facebook feeds and includes a complete bundled snapshot of the maintained political keyword list. Coverage continues to grow, and false positives are possible.
 
 ## Try it in Firefox
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Choose **Load Temporary Add-on** and select `extension/manifest.json`.
-3. Click the NOpartisan toolbar action for quick filtering and placeholder toggles, or choose **Open full settings**.
+3. Filtering starts immediately with the bundled list. Click the NOpartisan toolbar action for quick filtering and placeholder toggles, or open full settings to manage personal phrases and optional updates.
 4. Visit a supported feed and grant the requested site access. Reload existing tabs after installation.
 
 Temporary add-ons disappear when Firefox restarts. Release distribution requires Mozilla signing; the generated ZIP is unsigned. The permanent extension ID is `nopartisan@ohlongshawnson.github.io`. See [unlisted signing and test installation](docs/firefox-signing.md) before replacing the old temporary development install.
@@ -17,11 +17,9 @@ Filtering matches whole words and phrases without case sensitivity, with Unicode
 
 ## Keyword updates
 
-The extension works offline with `extension/keywords.json`. To enable GitHub downloads, enter:
+Open full settings and choose **Update filters now** or enable **Keep political filters updated** for daily checks while Firefox is running. Firefox requests optional GitHub access after that user action; declining leaves filtering and the full bundled list available offline. The maintained default source is `https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json`. Its URL is available under **Advanced update source** for maintainers who need a custom list. Existing custom sources and update opt-outs are preserved.
 
-`https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json`
-
-Save settings to grant optional GitHub access, then download manually or enable daily checks. Checks run only while Firefox is running. This is an extension update check, not a collection service. The repository owner is deliberately not hard-coded. Only raw GitHub URLs inside a `nopartisan` repository are accepted. Redirects, oversized responses, and malformed lists fail without replacing the last successful list. Changing or clearing the source resets the downloaded list. Clearing the source also removes GitHub access.
+GitHub receives ordinary connection information, including the user's IP address and requested list URL. Feed content, browsing history, personal keywords, and matched phrases are never sent. Redirects, oversized responses, and malformed lists fail without replacing the last valid list. Both published JSON files use schema 1 and are synchronized by the publisher.
 
 Lists use schema version 1: `{ "schemaVersion": 1, "version": "2026-11-05", "keywords": ["political campaign"] }`. Lists must contain 1–10,000 nonempty phrases of at most 120 characters. Maximum response size is 1 MB. Keep `keywords/politics.json` and `extension/keywords.json` identical when shipping bundled updates.
 
@@ -39,13 +37,13 @@ npm run build
 npm run check:release
 ```
 
-Build output: `dist/nopartisan-0.2.1.zip`. Development dependencies are never included in the extension. On the initial workstation, Node is locally installed under `~/.local/share/nopartisan-tools/current/bin`; add that directory to PATH for these commands.
+Build output: `dist/nopartisan-0.3.0.zip`. Development dependencies are never included in the extension. On the initial workstation, Node is locally installed under `~/.local/share/nopartisan-tools/current/bin`; add that directory to PATH for these commands.
 
 Pure matching and validation live in `extension/core.js`; `content.js` handles site adapters and dynamic posts; `background.js` handles updates; `options.*` contains settings. Tests exercise matching, remote source validation, and feed lifecycle behavior.
 
 ## Separate automation server
 
-Keyword collection and automatic publishing run separately on Environment B, the OMV server. The server implementation is maintained on `feature/expanded-coverage`; it publishes the complete schema-1 list to `main`. The workstation does not install or run the server scheduler. Desktop releases preserve the latest published list and keep both JSON copies synchronized.
+The external automation server has a tested [collection and publishing pipeline](automation/PUBLISHING.md): current Congress, executive and governor directories plus reviewed political organizations and specific phrases → categorized validation → a complete schema-1 keyword list → one GitHub commit to `main` synchronizing `keywords/politics.json` and `extension/keywords.json`. News discoveries remain separate until verified. The repository timer configuration is daily at 04:30–04:40 America/Chicago. Its live OMV service and schedule were not inspected from this workstation. Failed, empty, invalid or conflicting collection leaves the published list intact. The separate [manual proposal and review workflow](automation/README.md) remains available.
 
 Repository: [ohlongshawnson/nopartisan](https://github.com/ohlongshawnson/nopartisan). Licensed under the [MIT License](LICENSE).
 
@@ -88,4 +86,4 @@ X filtering includes existing image alt text and accessible image descriptions. 
 
 ## First signed test release
 
-Version **0.2.1** is prepared for Mozilla’s **unlisted / self-distributed** signing route. The generated ZIP is unsigned until Mozilla signs it. [Release notes](docs/releases/0.2.1.md) and [submission steps](docs/firefox-signing.md) document the package, identity, privacy, and test limitations. No extension-binary update server is configured; keyword downloads are a separate mechanism.
+Version **0.3.0** is prepared for Mozilla’s **unlisted / self-distributed** signing route. The generated ZIP is unsigned until Mozilla signs it. [Release notes](docs/releases/0.3.0.md), [submission steps and reviewer notes](docs/firefox-signing.md), and [store listing copy](docs/mozilla-listing.md) describe the package and privacy behavior. No extension-binary update server is configured; keyword downloads are a separate mechanism.

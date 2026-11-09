@@ -1,16 +1,30 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>NOpartisan settings</title><link rel="stylesheet" href="options.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NOpartisan settings</title><link rel="stylesheet" href="options.css"></head>
 <body><main><header class="brand"><img src="Blue NOP Tech Logo.png" width="80" height="80" alt=""><div><h1>NOpartisan</h1><p class="tagline">No left. No right. No thanks.</p></div></header>
-<p>Political feed filtering happens on your device. No accounts, analytics, or uploaded posts.</p>
-<form id="settings"><label><input type="checkbox" id="enabled"> Enable filtering</label>
+<section class="card intro"><h2>Your political filters are ready</h2><p>NOpartisan filters with its complete bundled list right away and works offline. Feed text and your personal keywords stay on this device.</p></section>
+<form id="settings">
+<section class="card"><h2>Filtering</h2>
+<label><input type="checkbox" id="enabled"> Enable filtering</label>
 <label><input type="checkbox" id="showPlaceholders"> Show a placeholder for filtered content</label>
-<p>Uncheck to hide matching posts and trends completely. Hidden content will have no Reveal button.</p>
-<label for="custom">Your extra keywords (one phrase per line)</label><textarea id="custom" rows="7" maxlength="120000"></textarea>
-<p>Matches whole words and phrases, regardless of case. Broad terms can hide unrelated posts. Enable placeholders to reveal individual filtered posts.</p>
-<label for="source">GitHub keyword list URL (optional)</label><input id="source" type="url" placeholder="https://raw.githubusercontent.com/OWNER/nopartisan/main/keywords/politics.json">
-<label><input id="autoUpdate" type="checkbox"> Check for keyword updates daily while Firefox is running</label>
-<p>GitHub receives your IP address when you download a list. Feed content and browsing history are never sent. Leave this empty to use the bundled list offline.</p>
-<button type="submit" disabled id="save">Save settings</button> <button type="button" id="update" disabled>Download keywords now</button></form>
-<p id="status" role="status" aria-live="polite"></p><p id="listInfo"></p>
-<p>Initial support: Reddit, X, and Facebook web feeds. Text only; images, video, and changing site layouts can limit coverage.</p>
+<p>Turn placeholders off to hide matching posts and trends completely. Hidden content will have no Reveal button.</p>
+<label for="custom">Your extra keywords (one phrase per line)</label><textarea id="custom" rows="6" maxlength="120000"></textarea>
+<p>Matches whole words and phrases, regardless of case. Broad terms can hide unrelated posts.</p></section>
+
+<section class="card updates"><h2>Filter list updates</h2>
+<p>Optional downloads bring the latest reviewed list from GitHub. GitHub receives ordinary connection details, such as your IP address, when you download. Feed content and personal keywords are never sent.</p>
+<label><input id="autoUpdate" type="checkbox"> Keep political filters updated</label>
+<p>When enabled, Firefox checks daily while it is running. Save settings to approve optional GitHub access.</p>
+<button type="button" id="update" disabled>Update filters now</button>
+<div id="listInfo" role="status" aria-live="polite"></div>
+</section>
+
+<details class="card advanced"><summary>Advanced update source</summary>
+<p>The maintained NOpartisan list is used by default. Change this only if you maintain another list in the supported schema. Leave blank to restore the default source.</p>
+<label for="source">Keyword list URL</label><input id="source" type="url" spellcheck="false" placeholder="https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json">
+</details>
+
+<button type="submit" disabled id="save">Save settings</button>
+</form>
+<p id="status" role="status" aria-live="polite"></p>
+<p class="support">Initial support: Reddit, X, and Facebook web feeds. Text only; images, video, and changing site layouts can limit coverage.</p>
 </main><script src="core.js"></script><script src="options.js"></script></body></html>

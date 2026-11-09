@@ -1,0 +1,37 @@
+{
+  "repository": "ohlongshawnson/nopartisan",
+  "branch": "main",
+  "scope": "US federal Senate; full names backed by official membership and corroborated by bioguide ID, state and affiliation",
+  "minimum_records": 90,
+  "maximum_records": 110,
+  "sources": [
+    {
+      "id": "senate",
+      "kind": "senate_xml",
+      "name": "US Senate official senators directory",
+      "url": "https://www.senate.gov/general/contact_information/senators_cfm.xml",
+      "required": true
+    },
+    {
+      "id": "legislators",
+      "kind": "legislators_csv",
+      "name": "Congress Legislators live CSV export (community maintained)",
+      "url": "https://raw.githubusercontent.com/unitedstates/congress-legislators/gh-pages/legislators-current.csv",
+      "required": true
+    },
+    {
+      "id": "npr",
+      "kind": "feed",
+      "name": "NPR Politics RSS discovery",
+      "url": "https://feeds.npr.org/1014/rss.xml",
+      "required": true
+    },
+    {
+      "id": "fox",
+      "kind": "feed",
+      "name": "Fox News Politics RSS discovery",
+      "url": "https://moxie.foxnews.com/google-publisher/politics.xml",
+      "required": true
+    }
+  ]
+}

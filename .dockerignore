@@ -1,0 +1,14 @@
+*
+!automation/
+!automation/**
+!keywords/
+!keywords/politics.json
+!extension/
+!extension/keywords.json
+automation/data/
+automation/cache/
+automation/secrets/
+**/__pycache__/
+**/*.pyc
+**/.env*
+**/*.patch

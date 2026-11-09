@@ -1,0 +1,388 @@
+{
+  "repository": "ohlongshawnson/nopartisan",
+  "branch": "main",
+  "scope": "Current US Congress, president/vice president, Cabinet and governors; reviewed political organizations and specific civic/legislative phrases",
+  "sources": [
+    {
+      "id": "senate",
+      "kind": "senate_xml",
+      "name": "US Senate official senators directory",
+      "url": "https://www.senate.gov/general/contact_information/senators_cfm.xml",
+      "required": true,
+      "checks": {
+        "minimum": 90,
+        "maximum": 100,
+        "unique": "bioguide ID",
+        "states": 50
+      }
+    },
+    {
+      "id": "legislators",
+      "kind": "congress_csv",
+      "name": "Congress Legislators live CSV export (community maintained)",
+      "url": "https://raw.githubusercontent.com/unitedstates/congress-legislators/gh-pages/legislators-current.csv",
+      "required": true,
+      "checks": {
+        "senate_minimum": 90,
+        "senate_maximum": 100,
+        "house_minimum": 420,
+        "house_maximum": 441
+      }
+    },
+    {
+      "id": "house",
+      "kind": "house_xml",
+      "name": "US House Clerk current member directory",
+      "url": "https://clerk.house.gov/xml/lists/MemberData.xml",
+      "required": true,
+      "checks": {
+        "districts": 441,
+        "minimum_occupied": 420,
+        "max_age_days": 60
+      }
+    },
+    {
+      "id": "npr",
+      "kind": "feed",
+      "name": "NPR Politics RSS discovery",
+      "url": "https://feeds.npr.org/1014/rss.xml",
+      "required": true
+    },
+    {
+      "id": "fox",
+      "kind": "feed",
+      "name": "Fox News Politics RSS discovery",
+      "url": "https://moxie.foxnews.com/google-publisher/politics.xml",
+      "required": true
+    },
+    {
+      "id": "administration",
+      "kind": "whitehouse_administration",
+      "name": "White House administration",
+      "url": "https://www.whitehouse.gov/administration/",
+      "required": true,
+      "checks": {
+        "roles": [
+          "President",
+          "Vice President"
+        ],
+        "exact_count": 2
+      }
+    },
+    {
+      "id": "cabinet",
+      "kind": "whitehouse_cabinet",
+      "name": "White House current Cabinet",
+      "url": "https://www.whitehouse.gov/administration/cabinet/",
+      "required": true,
+      "checks": {
+        "minimum": 15,
+        "maximum": 35,
+        "required_departments": 15
+      },
+      "aliases": [
+        {
+          "for_name": "Robert F. Kennedy, Jr.",
+          "phrase": "Robert F. Kennedy Jr."
+        },
+        {
+          "for_name": "Russ Vought",
+          "phrase": "Russell Vought"
+        }
+      ]
+    },
+    {
+      "id": "governors",
+      "kind": "nga_governors",
+      "name": "National Governors Association current directory and profiles",
+      "url": "https://www.nga.org/governors/",
+      "required": true,
+      "checks": {
+        "states": 50,
+        "territories": 5,
+        "exact_count": 55,
+        "current_profile_required": true
+      }
+    },
+    {
+      "id": "fec_parties",
+      "kind": "evidence_html",
+      "name": "Federal Election Commission national committee definitions",
+      "url": "https://www.fec.gov/campaign-finance-data/campaign-finance-statistics/formula-calculations-statistical-tables-election-cycles-after-2010/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "Republican National Committee",
+          "category": "committee"
+        },
+        {
+          "phrase": "Constitution Party National Committee",
+          "category": "committee"
+        },
+        {
+          "phrase": "Green Party of the United States",
+          "category": "party"
+        },
+        {
+          "phrase": "Reform Party of the United States",
+          "category": "party"
+        },
+        {
+          "phrase": "Libertarian National Committee",
+          "category": "committee"
+        },
+        {
+          "phrase": "Libertarian National Congressional Committee",
+          "category": "committee"
+        },
+        {
+          "phrase": "Green Senatorial Campaign Committee",
+          "category": "committee"
+        },
+        {
+          "phrase": "DCCC",
+          "category": "committee"
+        },
+        {
+          "phrase": "DSCC",
+          "category": "committee"
+        },
+        {
+          "phrase": "NRCC",
+          "category": "committee"
+        },
+        {
+          "phrase": "NRSC",
+          "category": "committee"
+        },
+        {
+          "phrase": "Constitution Party",
+          "category": "party"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 12
+      }
+    },
+    {
+      "id": "democrats",
+      "kind": "evidence_html",
+      "name": "Democratic Party official website",
+      "url": "https://democrats.org/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "Democratic National Committee",
+          "category": "committee"
+        },
+        {
+          "phrase": "Democratic Party",
+          "category": "party"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 2
+      }
+    },
+    {
+      "id": "libertarian",
+      "kind": "evidence_html",
+      "name": "Libertarian Party official website",
+      "url": "https://lp.org/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "Libertarian Party",
+          "category": "party"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 1
+      }
+    },
+    {
+      "id": "dscc",
+      "kind": "evidence_html",
+      "name": "DSCC official website",
+      "url": "https://www.dscc.org/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "Democratic Senatorial Campaign Committee",
+          "category": "committee"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 1
+      }
+    },
+    {
+      "id": "nrcc",
+      "kind": "evidence_html",
+      "name": "NRCC official website",
+      "url": "https://www.nrcc.org/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "National Republican Congressional Committee",
+          "category": "committee"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 1
+      }
+    },
+    {
+      "id": "cpc",
+      "kind": "evidence_html",
+      "name": "Congressional Progressive Caucus official website",
+      "url": "https://progressives.house.gov/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "Congressional Progressive Caucus",
+          "category": "organization"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 1
+      }
+    },
+    {
+      "id": "rsc",
+      "kind": "evidence_html",
+      "name": "Republican Study Committee official website",
+      "url": "https://rsc-pfluger.house.gov/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "Republican Study Committee",
+          "category": "organization"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 1
+      }
+    },
+    {
+      "id": "senate_terms",
+      "kind": "evidence_html",
+      "name": "US Senate legislative glossary",
+      "url": "https://www.senate.gov/about/research-tools/glossary.htm",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "concurrent resolution",
+          "category": "legislative_phrase"
+        },
+        {
+          "phrase": "joint resolution",
+          "category": "legislative_phrase"
+        },
+        {
+          "phrase": "continuing resolution",
+          "category": "legislative_phrase"
+        },
+        {
+          "phrase": "presidential veto",
+          "category": "legislative_phrase"
+        },
+        {
+          "phrase": "budget resolution",
+          "category": "legislative_phrase"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 5
+      }
+    },
+    {
+      "id": "election_terms",
+      "kind": "evidence_html",
+      "name": "USAGov presidential election process",
+      "url": "https://www.usa.gov/presidential-election-process",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "presidential election",
+          "category": "election_phrase"
+        },
+        {
+          "phrase": "general election",
+          "category": "election_phrase"
+        },
+        {
+          "phrase": "electoral college",
+          "category": "election_phrase"
+        },
+        {
+          "phrase": "presidential primaries",
+          "category": "election_phrase"
+        },
+        {
+          "phrase": "nominating conventions",
+          "category": "election_phrase"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 5
+      }
+    },
+    {
+      "id": "campaign_terms",
+      "kind": "evidence_html",
+      "name": "FEC introduction to campaign finance",
+      "url": "https://www.fec.gov/introduction-campaign-finance/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "campaign finance",
+          "category": "campaign_phrase"
+        },
+        {
+          "phrase": "voter registration",
+          "category": "election_phrase"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 2
+      }
+    },
+    {
+      "id": "pac_terms",
+      "kind": "evidence_html",
+      "name": "FEC political action committee registration",
+      "url": "https://www.fec.gov/help-candidates-and-committees/registering-pac/",
+      "required": true,
+      "entries": [
+        {
+          "phrase": "political action committee",
+          "category": "campaign_phrase"
+        }
+      ],
+      "checks": {
+        "exact_evidence_entries": 1
+      }
+    }
+  ],
+  "policy_version": 2,
+  "excluded_phrases": {
+    "john carter": "Ambiguous with the fictional character and movie; retain source-supported official name with middle initial instead.",
+    "mark green": "Ordinary imperative (mark green boxes); retain any source-supported middle-initial form instead.",
+    "green party": "Can describe green party decorations; use Green Party of the United States.",
+    "DNC": "Ambiguous medical/other acronym; use Democratic National Committee.",
+    "RNC": "Ambiguous credential/other acronym; use Republican National Committee.",
+    "PAC": "Ambiguous medical/other acronym; use political action committee.",
+    "primary": "Everyday school/color word; use specific election phrases.",
+    "bill": "Everyday invoice/first name; use specific legislative phrases.",
+    "speaker": "Everyday device/role; do not publish alone.",
+    "cabinet": "Everyday furniture word; do not publish alone.",
+    "house": "Everyday building word; do not publish alone.",
+    "reconciliation": "Everyday/financial word; use specific legislative terminology.",
+    "unanimous consent": "Also used in clubs and ordinary meetings; deferred.",
+    "national conventions": "Generic convention phrase; evidence appeared only in navigation, not substantive election text.",
+    "al green": "Identical to the soul singer (https://www.al-green.com/); no sufficiently distinct source-supported full name in these directories.",
+    "bill lee": "Identical to a baseball player (https://baseballsavant.mlb.com/savant-player/bill-lee-117617); accept the literal Gov. Bill Lee heading instead.",
+    "john curtis": "Matches John Curtis Christian School (https://www.johncurtis.com/student-life); retain John R. Curtis."
+  }
+}

@@ -2,3 +2,11 @@ node_modules/
 dist/
 web-ext-artifacts/
 *.log
+__pycache__/
+*.py[cod]
+.env
+.env.*
+automation/data/
+automation/cache/
+automation/secrets/
+automation/*.patch

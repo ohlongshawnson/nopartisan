@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "NOpartisan",
-  "version": "0.2.1",
-  "description": "No left. No right. No thanks. Filter political feed posts locally.",
+  "version": "0.3.0",
+  "description": "Filter political content in social feeds. Works offline with a bundled list; optional GitHub updates.",
   "permissions": [
     "storage",
     "alarms",

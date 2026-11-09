@@ -1,0 +1,35 @@
+{
+  "scope": "US federal elected legislators; initial Senate sample",
+  "sources": [
+    {
+      "id": "legislators",
+      "kind": "legislators_csv",
+      "name": "Congress Legislators (community-maintained structured data)",
+      "url": "https://raw.githubusercontent.com/unitedstates/congress-legislators/577ca04282d14688cb14f6559eb27b52bdc50dfc/legislators-current.csv",
+      "reference_url": "https://github.com/unitedstates/congress-legislators",
+      "snapshot_date": "2026-09-24",
+      "required": true
+    },
+    {
+      "id": "senate",
+      "kind": "senate_xml",
+      "name": "US Senate official senators directory",
+      "url": "https://www.senate.gov/general/contact_information/senators_cfm.xml",
+      "required": false
+    },
+    {
+      "id": "npr",
+      "kind": "feed",
+      "name": "NPR Politics RSS",
+      "url": "https://feeds.npr.org/1014/rss.xml",
+      "required": false
+    },
+    {
+      "id": "fox",
+      "kind": "feed",
+      "name": "Fox News Politics RSS",
+      "url": "https://moxie.foxnews.com/google-publisher/politics.xml",
+      "required": false
+    }
+  ]
+}

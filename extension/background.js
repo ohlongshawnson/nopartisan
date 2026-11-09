@@ -4,7 +4,7 @@ async function update() {
   if (pendingUpdate) return pendingUpdate;
   pendingUpdate = (async () => {
     const { settings = defaults } = await browser.storage.local.get('settings');
-    const url = sourceURL(settings.source);
+    const url = sourceURL(settings.source || defaults.source);
     if (!await browser.permissions.contains({ origins: ['https://raw.githubusercontent.com/*'] })) throw new Error('Grant GitHub access in settings first.');
     const response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error(`Keyword download failed (${response.status}).`);
@@ -29,7 +29,7 @@ async function update() {
 async function schedule() {
   const { settings = defaults } = await browser.storage.local.get('settings');
   await browser.alarms.clear('keywords');
-  if (settings.autoUpdate && settings.source) browser.alarms.create('keywords', { delayInMinutes: 1, periodInMinutes: 1440 });
+  if (settings.autoUpdate) browser.alarms.create('keywords', { delayInMinutes: 1, periodInMinutes: 1440 });
 }
 browser.runtime.onInstalled.addListener(schedule);
 browser.runtime.onStartup.addListener(schedule);
@@ -40,7 +40,10 @@ browser.alarms.onAlarm.addListener(async alarm => {
 });
 browser.runtime.onMessage.addListener((message, sender) => {
   if (sender.id !== browser.runtime.id || sender.url !== browser.runtime.getURL('options.html')) return;
-  if (message.type === 'update') return update().then(version => ({ version }), error => ({ error: error.message }));
+  if (message.type === 'update') return update().then(version => ({ version }), async error => {
+    await browser.storage.local.set({ updateError: error.message });
+    return { error: error.message };
+  });
 });
 
 // User-initiated post inspection. Reports never leave the browser or go to disk storage.

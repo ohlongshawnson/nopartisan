@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily NOpartisan keyword publishing
+
+[Timer]
+OnCalendar=*-*-* 04:30:00 America/Chicago
+RandomizedDelaySec=10min
+FixedRandomDelay=yes
+AccuracySec=1s
+Persistent=true
+Unit=nopartisan-publish.service
+
+[Install]
+WantedBy=timers.target

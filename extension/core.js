@@ -1,6 +1,7 @@
 /* Shared pure logic. Remote lists are data, never executable code. */
 (function (root) {
-  const defaults = { enabled: true, showPlaceholders: true, custom: [], source: '', autoUpdate: false };
+  const DEFAULT_SOURCE = 'https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json';
+  const defaults = { enabled: true, showPlaceholders: true, custom: [], source: DEFAULT_SOURCE, autoUpdate: false };
   const normalize = text => text.normalize('NFKC').toLocaleLowerCase('en-US').replace(/\s+/gu, ' ').trim();
   function validate(data) {
     if (!data || data.schemaVersion !== 1 || typeof data.version !== 'string' || data.version.length > 100 ||
@@ -21,5 +22,5 @@
         !/^\/[^/]+\/nopartisan\/[^/]+\/.+\.json$/.test(url.pathname)) throw new Error('Use an HTTPS raw.githubusercontent.com URL in a nopartisan repository.');
     return url.href;
   }
-  root.NOpartisan = { defaults, normalize, validate, matcher, sourceURL };
+  root.NOpartisan = { DEFAULT_SOURCE, defaults, normalize, validate, matcher, sourceURL };
 })(globalThis);
