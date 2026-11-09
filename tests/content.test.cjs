@@ -27,18 +27,18 @@ test('dynamic posts, reveal, recycled cards, and disabling', async () => {
  } finally {w.close();}
 });
 
-test('fresh offline installation filters from the complete bundled list', async () => {
+test('fresh offline installation filters Trump with political context but leaves unrelated posts', async () => {
  const terms = require('../extension/keywords.json');
- const dom = new JSDOM('<body><article data-testid="tweet">Donald J. Trump spoke today</article></body>', {url:'https://x.com/home',runScripts:'outside-only'});
+ const dom = new JSDOM('<body><article data-testid="tweet">Trump declares the end of mass deportations.</article><article data-testid="tweet">President Trump spoke today.</article><article data-testid="tweet">Trump endorses an amnesty deal with Democrats.</article><article data-testid="tweet">Trump played a card game.</article><article data-testid="tweet">A trumpet recital tonight.</article></body>', {url:'https://x.com/home',runScripts:'outside-only'});
  const w = dom.window;
  w.browser = {runtime:{id:'test',onMessage:{addListener(){}},getURL:p=>`moz-extension://test/${p}`},storage:{local:{get:async()=>({})},onChanged:{addListener(){}}}};
  w.fetch = async url => ({json:async()=>JSON.parse(fs.readFileSync(url.endsWith('keywords.json')?'extension/keywords.json':url,'utf8'))});
  w.eval(fs.readFileSync('extension/core.js','utf8')); w.eval(fs.readFileSync('extension/x-adapter.js','utf8')); w.eval(fs.readFileSync('extension/content.js','utf8'));
  try {
-  await waitFor(()=>w.document.querySelector('article').classList.contains('nopartisan-filtered'));
+  await waitFor(()=>w.document.querySelectorAll('.nopartisan-filtered').length===3);
   assert.ok(terms.keywords.length > 800);
-  assert.ok(w.document.querySelector('article').classList.contains('nopartisan-filtered'));
-  assert.equal(w.document.querySelectorAll('.nopartisan-notice').length,1);
+  assert.deepEqual([...w.document.querySelectorAll('article')].map(post=>post.classList.contains('nopartisan-filtered')),[true,true,true,false,false]);
+  assert.equal(w.document.querySelectorAll('.nopartisan-notice').length,3);
  } finally {w.close();}
 });
 
