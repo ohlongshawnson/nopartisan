@@ -27,9 +27,9 @@ test('dynamic posts, reveal, recycled cards, and disabling', async () => {
  } finally {w.close();}
 });
 
-test('fresh offline installation filters from the complete bundled list', async () => {
+test('fresh offline installation filters standalone Trump posts from the bundled list', async () => {
  const terms = require('../extension/keywords.json');
- const dom = new JSDOM('<body><article data-testid="tweet">Donald J. Trump spoke today</article></body>', {url:'https://x.com/home',runScripts:'outside-only'});
+ const dom = new JSDOM('<body><article data-testid="tweet">Trump declares a new policy.</article><article data-testid="tweet">A trumpet recital tonight.</article></body>', {url:'https://x.com/home',runScripts:'outside-only'});
  const w = dom.window;
  w.browser = {runtime:{id:'test',onMessage:{addListener(){}},getURL:p=>`moz-extension://test/${p}`},storage:{local:{get:async()=>({})},onChanged:{addListener(){}}}};
  w.fetch = async url => ({json:async()=>JSON.parse(fs.readFileSync(url.endsWith('keywords.json')?'extension/keywords.json':url,'utf8'))});
@@ -38,6 +38,7 @@ test('fresh offline installation filters from the complete bundled list', async 
   await waitFor(()=>w.document.querySelector('article').classList.contains('nopartisan-filtered'));
   assert.ok(terms.keywords.length > 800);
   assert.ok(w.document.querySelector('article').classList.contains('nopartisan-filtered'));
+  assert.equal(w.document.querySelectorAll('article')[1].classList.contains('nopartisan-filtered'),false);
   assert.equal(w.document.querySelectorAll('.nopartisan-notice').length,1);
  } finally {w.close();}
 });
