@@ -18,6 +18,8 @@ console.info('[NOpartisan] content script started', diagnostics.build);
   let activeKeywords = [], list = null, previousSummary, initializationError = null;
   const revealed = new WeakMap(), notices = new Map(), managed = new Set();
   const extract = post => isX ? X.extract(post) : { segments: [X.text(post)] };
+  const matchRules = NOpartisan.ruleMatcher(NOpartisan.contextualRules);
+  const contextualMatches = extracted => matchRules(extracted.segments.join(' '));
   const signature = (post, extracted) => JSON.stringify([isX ? X.identity(post) : null, extracted.segments]);
   function removeNotice(post) { notices.get(post)?.remove(); notices.delete(post); }
   function scan() {
@@ -30,7 +32,7 @@ console.info('[NOpartisan] content script started', diagnostics.build);
     for (const post of candidates) {
       managed.add(post);
       const extracted = extract(post);
-      const match = extracted.segments.some(matches);
+      const match = extracted.segments.some(matches) || contextualMatches(extracted).length > 0;
       if (match) matched++;
       const hide = enabled && revealed.get(post) !== signature(post, extracted) && match;
       if (hide) hidden++;
@@ -75,9 +77,10 @@ console.info('[NOpartisan] content script started', diagnostics.build);
     const post = isX ? X.findPost(element) : null;
     const extracted = post ? X.extract(post) : null;
     const matchedKeywords = extracted ? activeKeywords.filter(keyword => extracted.segments.some(NOpartisan.matcher([keyword]))) : [];
+    const matchedRules = extracted ? contextualMatches(extracted) : [];
     return { list, initialized: diagnostics.initialized, initializationError, filteringEnabled: enabled,
       recognized: Boolean(post), postIdentity: post ? X.identity(post) : null, extracted,
-      matched: matchedKeywords.length > 0, matchedKeywords,
+      matched: matchedKeywords.length > 0 || matchedRules.length > 0, matchedKeywords, matchedRules,
       revealed: Boolean(post && revealed.get(post) === signature(post, extracted)),
       currentlyHidden: Boolean(post?.classList.contains('nopartisan-filtered')) };
   }

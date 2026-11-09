@@ -42,6 +42,7 @@ test('fresh setup reports the complete bundled list and does not request GitHub 
     assert.equal(doc.getElementById('autoUpdate').checked, false);
     assert.equal(doc.getElementById('source').value, 'https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json');
     assert.match(doc.getElementById('listInfo').textContent, new RegExp(`bundled, version ${bundle.version}, ${bundle.keywords.length} unique keywords`));
+    assert.match(doc.getElementById('listInfo').textContent, /Trump plus a political term in the same post/);
     assert.match(doc.getElementById('listInfo').textContent, /ready offline/);
     assert.deepEqual(requested, []);
   } finally { dom.window.close(); }

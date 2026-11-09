@@ -12,6 +12,17 @@ test('case, whitespace, Unicode boundaries, and literal punctuation', () => {
  assert.equal(matches('Learning C++ today'), true);
  assert.equal(matches('une élection.'), true);
 });
+test('contextual rules require all trigger terms and any one context term in either order', () => {
+ const matches = core.ruleMatcher([{ id: 'test', all: ['Trump'], any: ['election', 'deportation'] }]);
+ assert.deepEqual(matches('Trump discusses the election.'), ['test']);
+ assert.deepEqual(matches('Deportation plans from TRUMP.'), ['test']);
+ for (const text of ['Trump played a card.', 'An election is tomorrow.', 'Trumpets sounded during the election.']) {
+  assert.deepEqual(matches(text), [], text);
+ }
+ const builtIn = core.ruleMatcher(core.contextualRules);
+ assert.deepEqual(builtIn('Politics surrounding Trump.'), ['trump-political-context']);
+ assert.deepEqual(builtIn('Trump and the election.'), ['trump-political-context']);
+});
 test('malformed or oversized remote lists rejected', () => {
  for (const data of [null, {}, {schemaVersion:1,version:'v',keywords:['']}, {schemaVersion:1,version:'v',keywords:['a'.repeat(121)]}]) assert.throws(() => core.validate(data));
  assert.deepEqual(core.validate({schemaVersion:1,version:'v',keywords:['MAGA','maga']}).keywords,['maga']);

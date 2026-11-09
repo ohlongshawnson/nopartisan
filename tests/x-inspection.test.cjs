@@ -68,6 +68,18 @@ test('alt/ARIA changes, inserted quotes, and recycled same-text cards rescan and
     assert.notEqual(ctx.$('fullNames').previousElementSibling?.dataset.nopartisanNotice, 'true');
   } finally { ctx.close(); }
 });
+test('inspection identifies a contextual rule match separately from keywords', async () => {
+  const ctx = await setup();
+  try {
+    ctx.$('timeline').insertAdjacentHTML('beforeend', '<article id="contextual" data-testid="tweet">Trump discusses deportations.</article>');
+    await waitFor(() => ctx.hidden('contextual'));
+    const report = await ctx.inspect('contextual');
+    assert.equal(report.matched, true);
+    assert.deepEqual(report.matchedKeywords, []);
+    assert.deepEqual(report.matchedRules, ['trump-political-context']);
+    assert.equal(report.currentlyHidden, true);
+  } finally { ctx.close(); }
+});
 test('diagnosis distinguishes an old downloaded list and reflects list updates in open tabs', async () => {
   const ctx = await setup();
   try {

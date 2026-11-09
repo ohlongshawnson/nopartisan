@@ -26,6 +26,7 @@ async function load(refreshControls = true) {
   const listSource = stored.remoteList ? 'downloaded' : 'bundled';
   const personalCount = new Set((settings.custom || []).map(NOpartisan.normalize).filter(Boolean)).size;
   const lines = [`Active list: ${listSource}, version ${activeList.version}, ${activeList.keywords.length.toLocaleString()} unique keywords.`];
+  lines.push('Built-in contextual rule: Trump plus a political term in the same post.');
   if (personalCount) lines.push(`${personalCount.toLocaleString()} personal keywords are also active.`);
   lines.push(stored.lastUpdate ? `Last successful download: ${new Date(stored.lastUpdate).toLocaleString()}.` : 'Last successful download: None; the bundled list is ready offline.');
   if (stored.updateError) lines.push(`Latest update failed: ${stored.updateError} The previous valid list remains active.`);
