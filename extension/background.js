@@ -1,52 +1,96 @@
-const { defaults, validate, sourceURL } = NOpartisan;
-let pendingUpdate;
-async function update() {
-  if (pendingUpdate) return pendingUpdate;
-  pendingUpdate = (async () => {
-    const { settings = defaults } = await browser.storage.local.get('settings');
-    const url = sourceURL(settings.source || defaults.source);
-    if (!await browser.permissions.contains({ origins: ['https://raw.githubusercontent.com/*'] })) throw new Error('Grant GitHub access in settings first.');
-    const response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000) });
-    if (!response.ok) throw new Error(`Keyword download failed (${response.status}).`);
-    const reader = response.body.getReader(); const chunks = []; let size = 0;
-    while (true) {
-      const { done, value } = await reader.read(); if (done) break;
-      size += value.length;
-      if (size > 1000000) { await reader.cancel(); throw new Error('Keyword download exceeds 1 MB.'); }
-      chunks.push(value);
-    }
-    const bytes = new Uint8Array(size); let offset = 0;
-    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-    const list = validate(JSON.parse(new TextDecoder().decode(bytes)));
-    // A source changed while fetching must never publish an obsolete result.
-    const current = await browser.storage.local.get('settings');
-    if (current.settings?.source !== settings.source) throw new Error('Source changed; try again.');
-    await browser.storage.local.set({ remoteList: list, lastUpdate: new Date().toISOString(), updateError: '' });
-    return list.version;
-  })();
-  try { return await pendingUpdate; } finally { pendingUpdate = undefined; }
+const { defaults, validate, sourceURL, UPDATE_PERMISSION } = NOpartisan;
+const DAY = 24 * 60 * 60 * 1000;
+const RETRY = 60 * 60 * 1000;
+let pendingUpdate, foundationPromise;
+const effective = stored => ({ ...defaults, ...stored.settings });
+const configuredURL = settings => sourceURL(settings.source || defaults.source, settings.source);
+
+async function foundation() {
+  if (!foundationPromise) foundationPromise = (async () => {
+    const response = await fetch(browser.runtime.getURL('foundational.json'));
+    return validate(await response.json());
+  })().catch(error => { foundationPromise = undefined; throw error; });
+  return foundationPromise;
 }
 async function schedule() {
-  const { settings = defaults } = await browser.storage.local.get('settings');
+  const stored = await browser.storage.local.get(['settings', 'nextUpdate', 'lastUpdate']);
   await browser.alarms.clear('keywords');
-  if (settings.autoUpdate) browser.alarms.create('keywords', { delayInMinutes: 1, periodInMinutes: 1440 });
+  if (!effective(stored).autoUpdate) return;
+  const due = stored.nextUpdate || (Date.parse(stored.lastUpdate) + DAY) || Date.now();
+  await browser.alarms.create('keywords', { when: Math.max(Date.now() + 60000, due) });
+}
+async function update({ automatic = false } = {}) {
+  if (pendingUpdate) return pendingUpdate;
+  pendingUpdate = (async () => {
+    try {
+      const settings = effective(await browser.storage.local.get('settings'));
+      if (automatic && !settings.autoUpdate) return null;
+      const url = configuredURL(settings);
+      await browser.storage.local.set({ updateStatus: 'checking', lastAttempt: new Date().toISOString() });
+      if (!await browser.permissions.contains(UPDATE_PERMISSION)) throw new Error('Keyword update access is missing. Allow access to the update service in Firefox permissions or use Update filters now. Local filtering still works.');
+      const response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error(`Keyword download failed (${response.status}).`);
+      const reader = response.body.getReader(); const chunks = []; let size = 0;
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break;
+        size += value.length;
+        if (size > 1000000) { await reader.cancel(); throw new Error('Keyword download exceeds 1 MB.'); }
+        chunks.push(value);
+      }
+      const bytes = new Uint8Array(size); let offset = 0;
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+      const downloaded = validate(JSON.parse(new TextDecoder().decode(bytes)));
+      const permanent = await foundation();
+      const list = validate({ ...downloaded, keywords: [...new Set([...downloaded.keywords, ...permanent.keywords])] });
+      // Discard obsolete results rather than publishing a response for a changed source.
+      const current = effective(await browser.storage.local.get('settings'));
+      if (configuredURL(current) !== url) throw new Error('Source changed; try again.');
+      if (automatic && !current.autoUpdate) throw new Error('Automatic updates were turned off. Current filters remain active.');
+      if (!await browser.permissions.contains(UPDATE_PERMISSION)) throw new Error('Keyword update access was revoked. Current filters remain active.');
+      // One storage transaction publishes the complete validated cache and status.
+      // Existing content scripts rescan through storage.onChanged.
+      await browser.storage.local.set({ remoteList: list, downloadedKeywordCount: downloaded.keywords.length,
+        lastUpdate: new Date().toISOString(), updateError: '', updateStatus: 'current', nextUpdate: Date.now() + DAY });
+      return list.version;
+    } catch (error) {
+      await browser.storage.local.set({ updateError: error.message, updateStatus: 'error', nextUpdate: Date.now() + RETRY });
+      throw error;
+    }
+  })();
+  try { return await pendingUpdate; }
+  finally { pendingUpdate = undefined; await schedule(); }
+}
+async function automaticUpdate() {
+  if (!effective(await browser.storage.local.get('settings')).autoUpdate) return;
+  try { await update({ automatic: true }); } catch { /* update records failure; filtering uses local data. */ }
+}
+async function resume() {
+  const stored = await browser.storage.local.get(['settings', 'nextUpdate', 'lastUpdate']);
+  await schedule();
+  if (!effective(stored).autoUpdate) return;
+  const due = stored.nextUpdate || (Date.parse(stored.lastUpdate) + DAY) || 0;
+  if (due <= Date.now()) await automaticUpdate();
 }
 browser.runtime.onInstalled.addListener(async details => {
-  await schedule();
-  if (details.reason === 'install') return browser.runtime.openOptionsPage();
+  const stored = await browser.storage.local.get(null);
+  const fresh = details.reason === 'install' && Object.keys(stored).length === 0;
+  if (fresh) await browser.storage.local.set({ settings: { ...defaults, autoUpdate: true } });
+  else if (!stored.settings) await browser.storage.local.set({ settings: { ...defaults } });
+  // No settings, keywords or prior opt-outs are rewritten on upgrade.
+  if (fresh) browser.runtime.openOptionsPage().catch(() => {});
+  await resume();
 });
-browser.runtime.onStartup.addListener(schedule);
-browser.storage.onChanged.addListener((changes, area) => { if (area === 'local' && changes.settings) schedule(); });
-browser.alarms.onAlarm.addListener(async alarm => {
-  if (alarm.name !== 'keywords') return;
-  try { await update(); } catch (error) { await browser.storage.local.set({ updateError: error.message }); }
+browser.runtime.onStartup.addListener(resume);
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.settings) resume().catch(() => {});
+});
+browser.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'keywords') return automaticUpdate(); });
+browser.permissions.onAdded.addListener(permissions => {
+  if (permissions.origins?.some(origin => origin.startsWith('https://raw.githubusercontent.com/'))) return automaticUpdate();
 });
 browser.runtime.onMessage.addListener((message, sender) => {
   if (sender.id !== browser.runtime.id || sender.url !== browser.runtime.getURL('options.html')) return;
-  if (message.type === 'update') return update().then(version => ({ version }), async error => {
-    await browser.storage.local.set({ updateError: error.message });
-    return { error: error.message };
-  });
+  if (message.type === 'update') return update().then(version => ({ version }), error => ({ error: error.message }));
 });
 
 // User-initiated post inspection. Reports never leave the browser or go to disk storage.
