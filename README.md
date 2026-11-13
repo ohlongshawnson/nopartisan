@@ -8,12 +8,14 @@ A privacy-focused Firefox extension that filters political feed posts regardless
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Choose **Load Temporary Add-on** and select `extension/manifest.json`.
-3. Filtering starts immediately with the bundled list. Click the NOpartisan toolbar action for quick filtering and placeholder toggles, or open full settings to manage personal phrases and optional updates.
-4. Visit a supported feed and grant the requested site access. Reload existing tabs after installation.
+3. Setup opens on first installation. Check **Website access** and grant access to each site you use; refresh already-open tabs. The bundled keyword list needs no download. Click the NOpartisan toolbar action for quick filtering and placeholder toggles, or open full settings to manage personal phrases and optional updates.
+4. Visit a supported feed. Only listed words and phrases match; a political item without an active phrase can remain visible. Add a missing phrase under personal keywords and save to update open tabs.
 
 Temporary add-ons disappear when Firefox restarts. Release distribution requires Mozilla signing; the generated ZIP is unsigned. The permanent extension ID is `nopartisan@ohlongshawnson.github.io`. See [unlisted signing and test installation](docs/firefox-signing.md) before replacing the old temporary development install.
 
 Filtering matches whole words and phrases without case sensitivity, with Unicode normalization and whitespace folding. A placeholder lets you reveal each hidden post. Turning filtering off restores posts. User keywords supplement the active bundled or downloaded list. Text inside images and video is not analyzed. Site DOM changes may break adapters; authenticated live feeds have not yet been verified.
+
+See [the Firefox 0.3.0 investigation](docs/firefox-030-regression.md) for signed-package tests, permission checks, and the remaining live-site acceptance checks.
 
 ## Keyword updates
 

@@ -2,6 +2,7 @@
 (function (root) {
   const DEFAULT_SOURCE = 'https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json';
   const defaults = { enabled: true, showPlaceholders: true, custom: [], source: DEFAULT_SOURCE, autoUpdate: false };
+  const sites = { X: 'https://x.com/*', Reddit: 'https://www.reddit.com/*', Facebook: 'https://www.facebook.com/*' };
   const normalize = text => text.normalize('NFKC').toLocaleLowerCase('en-US').replace(/\s+/gu, ' ').trim();
   function validate(data) {
     if (!data || data.schemaVersion !== 1 || typeof data.version !== 'string' || data.version.length > 100 ||
@@ -22,5 +23,5 @@
         !/^\/[^/]+\/nopartisan\/[^/]+\/.+\.json$/.test(url.pathname)) throw new Error('Use an HTTPS raw.githubusercontent.com URL in a nopartisan repository.');
     return url.href;
   }
-  root.NOpartisan = { DEFAULT_SOURCE, defaults, normalize, validate, matcher, sourceURL };
+  root.NOpartisan = { DEFAULT_SOURCE, defaults, sites, normalize, validate, matcher, sourceURL };
 })(globalThis);

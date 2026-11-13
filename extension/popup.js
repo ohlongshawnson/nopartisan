@@ -6,7 +6,7 @@ async function load() {
   const { settings = {} } = await browser.storage.local.get('settings');
   const active = { ...NOpartisan.defaults, ...settings };
   toggles.forEach(key => { $(key).checked = active[key] !== false; });
-  $('status').textContent = active.enabled ? 'Filtering is on across supported sites.' : 'Filtering is paused across supported sites.';
+  $('status').textContent = active.enabled ? 'Filtering is on. If posts remain visible, check website access and the active keyword list in Settings.' : 'Filtering is paused across supported sites.';
   setDisabled(saving);
 }
 async function save(key, value) {

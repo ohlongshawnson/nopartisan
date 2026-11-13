@@ -31,7 +31,10 @@ async function schedule() {
   await browser.alarms.clear('keywords');
   if (settings.autoUpdate) browser.alarms.create('keywords', { delayInMinutes: 1, periodInMinutes: 1440 });
 }
-browser.runtime.onInstalled.addListener(schedule);
+browser.runtime.onInstalled.addListener(async details => {
+  await schedule();
+  if (details.reason === 'install') return browser.runtime.openOptionsPage();
+});
 browser.runtime.onStartup.addListener(schedule);
 browser.storage.onChanged.addListener((changes, area) => { if (area === 'local' && changes.settings) schedule(); });
 browser.alarms.onAlarm.addListener(async alarm => {

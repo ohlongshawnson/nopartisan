@@ -22,3 +22,15 @@ test('only explicit GitHub nopartisan JSON sources accepted', () => {
  assert.equal(core.sourceURL('https://raw.githubusercontent.com/owner/nopartisan/main/keywords/politics.json'), 'https://raw.githubusercontent.com/owner/nopartisan/main/keywords/politics.json');
  for (const url of ['http://raw.githubusercontent.com/a/nopartisan/main/x.json','https://evil.test/a/nopartisan/main/x.json','https://raw.githubusercontent.com/a/other/main/x.json','https://raw.githubusercontent.com/a/nopartisan/main/x.json?q=1']) assert.throws(() => core.sourceURL(url));
 });
+
+test('website guidance requests exactly the manifest filtering origins', () => {
+ const vm = require('node:vm'); const fs = require('node:fs');
+ const ctx = vm.createContext({ URL });
+ vm.runInContext(fs.readFileSync('extension/core.js', 'utf8'), ctx);
+ const manifest = JSON.parse(fs.readFileSync('extension/manifest.json', 'utf8'));
+ assert.deepEqual(Object.values(ctx.NOpartisan.sites).sort(), manifest.host_permissions.slice().sort());
+ assert.equal(Object.values(ctx.NOpartisan.sites).includes('https://raw.githubusercontent.com/*'), false);
+ const bundled = JSON.parse(fs.readFileSync('extension/keywords.json', 'utf8'));
+ assert.equal(ctx.NOpartisan.matcher(bundled.keywords)('Mike Lee spoke today'), true);
+ assert.equal(ctx.NOpartisan.matcher(bundled.keywords)('Mark Levin spoke today'), false, 'Reported phrase is a coverage gap in the shipped list');
+});

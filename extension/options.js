@@ -3,6 +3,32 @@ const GITHUB_PERMISSION = { origins: ['https://raw.githubusercontent.com/*'] };
 let bundledList;
 let saving = false;
 
+async function loadSiteAccess() {
+  const rows = await Promise.all(Object.entries(NOpartisan.sites).map(async ([name, origin]) => {
+    const granted = await browser.permissions.contains({ origins: [origin] });
+    const row = document.createElement('p');
+    row.append(`${name}: ${granted ? 'Access granted.' : 'Access missing; filtering cannot run.'} `);
+    if (!granted) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.textContent = `Grant ${name} access`;
+      button.addEventListener('click', async () => {
+        // Request only the selected, already-declared website, directly from a user gesture.
+        try {
+          const allowed = await browser.permissions.request({ origins: [origin] });
+          $('status').textContent = allowed ? `${name} access granted. Refresh your ${name} tabs to start filtering.` : `${name} access was declined. Filtering cannot run on this site.`;
+          await loadSiteAccess();
+        } catch (error) { $('status').textContent = error.message; }
+      });
+      row.append(button);
+    }
+    return row;
+  }));
+  $('siteAccess').replaceChildren(...rows);
+}
+browser.permissions.onAdded.addListener(() => loadSiteAccess().catch(error => { $('status').textContent = error.message; }));
+browser.permissions.onRemoved.addListener(() => loadSiteAccess().catch(error => { $('status').textContent = error.message; }));
+loadSiteAccess().catch(error => { $('status').textContent = error.message; });
+
 async function load(refreshControls = true) {
   const [stored, granted, bundled] = await Promise.all([
     browser.storage.local.get(['settings', 'remoteList', 'lastUpdate', 'updateError']),

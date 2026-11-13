@@ -26,3 +26,20 @@ test('an empty legacy source safely resolves to the maintained default and missi
  allowed=true;assert.equal((await listener({type:'update'},sender)).version,'maintained');
  assert.equal(requestedUrl,'https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json');
 });
+
+test('first installation opens permission guidance without downloading or changing existing settings', async () => {
+ const installed = []; let opened = 0; let fetches = 0;
+ const settings = { enabled: false, custom: ['personal'], autoUpdate: false, source: '' };
+ const browser = {
+  runtime: { id: 'test', getURL: p => p, openOptionsPage: async () => { opened++; }, onInstalled: { addListener: f => installed.push(f) }, onStartup: { addListener() {} }, onMessage: { addListener() {} } },
+  storage: { local: { get: async () => ({settings}) }, onChanged: { addListener() {} } },
+  alarms: { clear: async () => {}, onAlarm: { addListener() {} } }, menus: { onClicked: { addListener() {} } }
+ };
+ const ctx = vm.createContext({ browser, fetch: async () => { fetches++; } });
+ vm.runInContext(fs.readFileSync('extension/core.js','utf8'),ctx);
+ vm.runInContext(fs.readFileSync('extension/background.js','utf8'),ctx);
+ await installed[0]({reason:'install'});
+ assert.equal(opened,1); assert.equal(fetches,0);
+ await installed[0]({reason:'update'});
+ assert.equal(opened,1); assert.deepEqual(settings.custom,['personal']); assert.equal(settings.enabled,false);
+});

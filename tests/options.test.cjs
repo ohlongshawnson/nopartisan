@@ -21,7 +21,7 @@ async function openOptions({ settings, remoteList, granted = false, allow = true
       set: async value => Object.assign(state, value),
       remove: async keys => keys.forEach(key => delete state[key])
     }, onChanged: { addListener: fn => changes.push(fn) } },
-    permissions: { contains: async () => granted, request: async value => { requested.push(value); granted = allow; return allow; } },
+    permissions: { onAdded: { addListener() {} }, onRemoved: { addListener() {} }, contains: async () => granted, request: async value => { requested.push(value); granted = allow; return allow; } },
     runtime: { getURL: path => `moz-extension://test/${path}`, sendMessage: async () => {
       state.remoteList = { schemaVersion: 1, version: 'downloaded-v2', keywords: ['updated list'] };
       state.lastUpdate = '2026-11-06T12:00:00.000Z'; state.updateError = '';
@@ -114,4 +114,35 @@ test('failed download status keeps the last valid list visible', async () => {
     assert.match(info, /Last successful download:/);
     assert.match(info, /Latest update failed: Network unavailable. The previous valid list remains active/);
   } finally { dom.window.close(); }
+});
+
+test('missing website access is visible and requests only the selected site in a click', async () => {
+  const { dom, requested } = await openOptions({ allow: false });
+  try {
+    const doc = dom.window.document;
+    assert.match(doc.getElementById('siteAccess').textContent, /X: Access missing; filtering cannot run/);
+    assert.equal(doc.getElementById('siteAccess').querySelectorAll('button').length, 3);
+    assert.equal(requested.length, 0);
+    doc.getElementById('siteAccess').querySelector('button').click();
+    await settle();
+    assert.deepEqual(JSON.parse(JSON.stringify(requested)), [{ origins: ['https://x.com/*'] }]);
+    assert.match(doc.getElementById('status').textContent, /X access was declined/);
+    assert.equal(doc.getElementById('enabled').checked, true);
+  } finally { dom.window.close(); }
+});
+
+test('granted website access needs no request and granting a missing site explains refreshing tabs', async () => {
+  const ready = await openOptions({ granted: true });
+  try {
+    assert.match(ready.dom.window.document.getElementById('siteAccess').textContent, /X: Access granted/);
+    assert.equal(ready.dom.window.document.getElementById('siteAccess').querySelectorAll('button').length, 0);
+    assert.equal(ready.requested.length, 0);
+  } finally { ready.dom.window.close(); }
+  const missing = await openOptions({ allow: true });
+  try {
+    missing.dom.window.document.getElementById('siteAccess').querySelector('button').click();
+    await settle();
+    assert.match(missing.dom.window.document.getElementById('status').textContent, /Refresh your X tabs/);
+    assert.deepEqual(JSON.parse(JSON.stringify(missing.requested)), [{ origins: ['https://x.com/*'] }]);
+  } finally { missing.dom.window.close(); }
 });
