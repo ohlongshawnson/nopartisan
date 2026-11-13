@@ -13,7 +13,7 @@ EXTENSION_ID = 'nopartisan@ohlongshawnson.github.io'
 # Deliberately reviewed runtime files only. New assets must be reviewed before shipping.
 RELEASE_FILES = {
     'Blue NOP Tech Logo.png', 'background.js', 'content.css', 'content.js', 'core.js',
-    'inspection.css', 'inspection.html', 'inspection.js', 'keywords.json', 'manifest.json',
+    'foundational.json', 'inspection.css', 'inspection.html', 'inspection.js', 'keywords.json', 'manifest.json',
     'options.css', 'options.html', 'options.js', 'popup.css', 'popup.html', 'popup.js', 'x-adapter.js',
 }
 
@@ -42,6 +42,12 @@ def main():
     require(manifest['browser_specific_settings']['gecko']['id'] == EXTENSION_ID, 'permanent Firefox ID changed')
     require(manifest['browser_specific_settings']['gecko']['data_collection_permissions']['required'] == ['none'], 'review changed data collection')
     require(package['license'] == lock['packages']['']['license'] == 'MIT', 'MIT metadata differs')
+    foundation = (ROOT/'keywords/foundational.json').read_bytes()
+    require(foundation == (ROOT/'extension/foundational.json').read_bytes(), 'foundational copies differ')
+    foundation_data = json.loads(foundation)
+    require(foundation_data.get('schemaVersion') == 1 and isinstance(foundation_data.get('version'), str)
+            and 0 < len(foundation_data['version']) <= 100 and isinstance(foundation_data.get('keywords'), list)
+            and 0 < len(foundation_data['keywords']) <= 10000, 'foundational schema invalid')
     canonical = (ROOT/'keywords/politics.json').read_bytes()
     require(canonical == (ROOT/'extension/keywords.json').read_bytes(), 'published and bundled keyword files differ')
     data = json.loads(canonical)
@@ -50,6 +56,7 @@ def main():
     for word in data['keywords']:
         require(isinstance(word, str) and word.strip() and len(word.encode('utf-16-le')) // 2 <= 120, 'invalid keyword phrase')
         require(not any(unicodedata.category(char) == 'Cc' for char in word), 'control character in keyword')
+    require(set(foundation_data['keywords']).issubset(data['keywords']), 'feed omits foundational vocabulary')
     source_files = {path.relative_to(ROOT/'extension').as_posix() for path in (ROOT/'extension').rglob('*') if path.is_file()}
     require(source_files == RELEASE_FILES, f'unreviewed or missing runtime files: {source_files ^ RELEASE_FILES}')
     archive_path = ROOT/f'dist/nopartisan-{version}.zip'

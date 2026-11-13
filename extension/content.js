@@ -1,6 +1,6 @@
 // Routine diagnostics contain counts only. Per-post reports require the context-menu action.
 const diagnostics = globalThis.NOpartisanDiagnostics = {
-  build: 'post-inspection-1', initialized: false, enabled: null,
+  build: 'trend-foundation-1', initialized: false, enabled: null,
   keywordCount: 0, candidates: 0, matched: 0, hidden: 0, runtimeErrors: 0
 };
 function reportError(error) {
@@ -14,8 +14,8 @@ console.info('[NOpartisan] content script started', diagnostics.build);
   const selectors = { 'www.reddit.com': 'shreddit-post, div[data-testid="post-container"]', 'x.com': X.candidateSelector, 'www.facebook.com': '[role="feed"] [role="article"]' };
   const selector = selectors[location.hostname];
   if (!selector) return;
-  let bundled, enabled = true, showPlaceholders = true, matches = () => false, queued = false;
-  let activeKeywords = [], list = null, previousSummary, initializationError = null;
+  let bundled, foundational, enabled = true, showPlaceholders = true, matches = () => false, queued = false;
+  let activeKeywords = [], personalKeywords = [], list = null, previousSummary, initializationError = null;
   const revealed = new WeakMap(), notices = new Map(), managed = new Set();
   const extract = post => isX ? X.extract(post) : { segments: [X.text(post)] };
   const signature = (post, extracted) => JSON.stringify([isX ? X.identity(post) : null, extracted.segments]);
@@ -30,7 +30,7 @@ console.info('[NOpartisan] content script started', diagnostics.build);
     for (const post of candidates) {
       managed.add(post);
       const extracted = extract(post);
-      const match = extracted.segments.some(matches);
+      const match = (isX && X.politicalCategory(extracted)) || extracted.segments.some(matches);
       if (match) matched++;
       const hide = enabled && revealed.get(post) !== signature(post, extracted) && match;
       if (hide) hidden++;
@@ -62,24 +62,37 @@ console.info('[NOpartisan] content script started', diagnostics.build);
     const settings = { ...NOpartisan.defaults, ...stored.settings };
     const base = stored.remoteList ? NOpartisan.validate(stored.remoteList) : bundled;
     enabled = settings.enabled;
+    personalKeywords = settings.custom;
     showPlaceholders = settings.showPlaceholders !== false;
-    activeKeywords = [...new Set([...base.keywords, ...settings.custom].map(NOpartisan.normalize).filter(Boolean))];
+    activeKeywords = [...new Set([...foundational.keywords, ...base.keywords, ...settings.custom].map(NOpartisan.normalize).filter(Boolean))];
     matches = NOpartisan.matcher(activeKeywords);
-    list = { source: stored.remoteList ? 'downloaded' : 'bundled', version: base.version, keywordCount: base.keywords.length,
+    list = { foundationalVersion: foundational.version, foundationalKeywordCount: foundational.keywords.length, source: stored.remoteList ? 'downloaded' : 'bundled', version: base.version, keywordCount: base.keywords.length,
       personalKeywordCount: new Set(settings.custom.map(NOpartisan.normalize).filter(Boolean)).size, activeKeywordCount: activeKeywords.length,
       configuredSource: settings.source, lastDownload: stored.lastUpdate || null, updateError: stored.updateError || null };
     Object.assign(diagnostics, { enabled, keywordCount: activeKeywords.length });
     queue();
   }
   function inspect(element) {
-    const post = isX ? X.findPost(element) : null;
+    const post = isX ? X.findCandidate(element) : null;
     const extracted = post ? X.extract(post) : null;
     const matchedKeywords = extracted ? activeKeywords.filter(keyword => extracted.segments.some(NOpartisan.matcher([keyword]))) : [];
-    return { list, initialized: diagnostics.initialized, initializationError, filteringEnabled: enabled,
+    const categoryMatched = Boolean(extracted && X.politicalCategory(extracted));
+    const keywordChecks = [...new Set(['politics', 'political', 'Justice Samuel Alito', ...personalKeywords].map(NOpartisan.normalize))].map(keyword => ({
+      keyword, active: activeKeywords.includes(keyword), extracted: Boolean(extracted?.segments.some(NOpartisan.matcher([keyword]))),
+      // Presence probe only: raw textContent joins block boundaries, so applying
+      // whole-word matching here would falsely report a visible phrase absent.
+      presentInDOMText: Boolean(post && NOpartisan.normalize(post.textContent).includes(keyword))
+    }));
+    const style = post ? getComputedStyle(post) : null;
+    return { build: diagnostics.build, extensionVersion: browser.runtime.getManifest().version,
+      list, initialized: diagnostics.initialized, initializationError, filteringEnabled: enabled,
       recognized: Boolean(post), postIdentity: post ? X.identity(post) : null, extracted,
-      matched: matchedKeywords.length > 0, matchedKeywords,
+      candidateType: post?.matches(X.trendSelector) ? 'trend' : post ? 'post' : null,
+      categoryMatched, keywordChecks, matched: categoryMatched || matchedKeywords.length > 0, matchedKeywords,
       revealed: Boolean(post && revealed.get(post) === signature(post, extracted)),
-      currentlyHidden: Boolean(post?.classList.contains('nopartisan-filtered')) };
+      currentlyHidden: Boolean(post?.classList.contains('nopartisan-filtered')),
+      computedDisplay: style?.display || null, computedVisibility: style?.visibility || null,
+      computedHidden: Boolean(style && (style.display === 'none' || style.visibility === 'hidden')) };
   }
   const observer = new MutationObserver(records => {
     if (records.some(record => !record.target.parentElement?.closest('[data-nopartisan-notice]') &&
@@ -93,7 +106,8 @@ console.info('[NOpartisan] content script started', diagnostics.build);
     if (area === 'local' && (changes.settings || changes.remoteList) && bundled) reload().catch(reportError);
   });
   const ready = (async () => {
-    bundled = NOpartisan.validate(await (await fetch(browser.runtime.getURL('keywords.json'))).json());
+    [bundled, foundational] = await Promise.all(['keywords.json', 'foundational.json'].map(async file =>
+      NOpartisan.validate(await (await fetch(browser.runtime.getURL(file))).json())));
     await reload(); diagnostics.initialized = true;
   })().catch(error => { initializationError = error.message; reportError(error); });
   browser.runtime.onMessage.addListener((message, sender) => {

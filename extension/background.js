@@ -64,7 +64,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
   try {
     report = await browser.tabs.sendMessage(tab.id, { type: 'inspectPost', targetElementId: info.targetElementId }, { frameId: info.frameId ?? 0 });
   } catch {
-    report = { error: 'Could not reach the content script. Reload NOpartisan and refresh the X tab, then try again.' };
+    report = { error: 'Content script not running or unavailable. Check X website access, reload NOpartisan and refresh the X tab, then try again.' };
   }
   const id = crypto.randomUUID();
   // Separate keys prevent one inspection from consuming another's report.

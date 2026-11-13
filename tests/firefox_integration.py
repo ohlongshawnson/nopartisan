@@ -14,6 +14,7 @@ import threading
 import zipfile
 
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
@@ -29,9 +30,16 @@ def check(label, value):
     print('PASS', label, flush=True)
 
 
-def start(profile):
+def start(profile, offline=False):
     options = Options()
     options.add_argument('-headless')
+    if offline:
+        options.set_preference('network.proxy.type', 1)
+        options.set_preference('network.proxy.http', '127.0.0.1')
+        options.set_preference('network.proxy.http_port', 9)
+        options.set_preference('network.proxy.ssl', '127.0.0.1')
+        options.set_preference('network.proxy.ssl_port', 9)
+        options.set_preference('network.proxy.no_proxies_on', 'localhost,127.0.0.1')
     options.add_argument('-profile')
     options.add_argument(str(profile))
     # Chrome context is needed only to locate the test extension's options URL
@@ -84,6 +92,9 @@ with tempfile.TemporaryDirectory(prefix='nopartisan-firefox-') as work:
     (fixture / 'index.html').write_text('<!doctype html><body><article id="political" data-testid="tweet">Mike Lee spoke today</article><article id="neutral" data-testid="tweet">A garden today</article><article id="custom" data-testid="tweet">Mark Levin spoke today</article></body>')
     (fixture / 'reddit.html').write_text('<!doctype html><body><shreddit-post id="political">Mike Lee spoke today</shreddit-post><shreddit-post id="neutral">A garden today</shreddit-post></body>')
     (fixture / 'facebook.html').write_text('<!doctype html><body><div role="feed"><div role="article" id="political">Mike Lee spoke today</div><div role="article" id="neutral">A garden today</div></div></body>')
+    with (fixture / 'index.html').open('a') as page:
+        page.write((ROOT/'tests/fixtures/x-alito-trend.html').read_text().split('<body>')[1].split('</body>')[0].replace('id="unrelated"', 'id="foundationPost"').replace('A garden today</article>', 'The senate election</article>'))
+        page.write('<div id="gaming" data-testid="trend"><div>Gaming · Trending</div><div>Grand Theft Auto VI</div></div><div id="news" data-testid="trend"><div>News · Trending</div><div>Weather forecast</div></div>')
     handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(fixture))
     server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -101,13 +112,15 @@ with tempfile.TemporaryDirectory(prefix='nopartisan-firefox-') as work:
                 manifest['content_scripts'][0]['matches'].append(origin)
                 manifest['web_accessible_resources'][0]['matches'].append(origin)
                 blob = json.dumps(manifest).encode()
+            if file.name == 'background.js':
+                blob = blob.decode().replace("documentUrlPatterns: ['https://x.com/*']", "documentUrlPatterns: ['https://x.com/*', 'http://127.0.0.1/*']").encode()
             if file.name == 'content.js':
                 text = blob.decode().replace("location.hostname === 'x.com'", "location.hostname === '127.0.0.1' && location.pathname === '/'")
                 text = text.replace("const selectors = {", "const selectors = { '127.0.0.1': location.pathname === '/reddit.html' ? 'shreddit-post, div[data-testid=\"post-container\"]' : location.pathname === '/facebook.html' ? '[role=\"feed\"] [role=\"article\"]' : X.candidateSelector,")
                 blob = text.encode()
             out.writestr(file.name, blob)
     profile = work / 'fixture-profile'; profile.mkdir()
-    driver = start(profile)
+    driver = start(profile, offline=True)
     try:
         driver.install_addon(str(archive), temporary=True)
         options_url = options_page(driver, addon_id)
@@ -115,10 +128,20 @@ with tempfile.TemporaryDirectory(prefix='nopartisan-firefox-') as work:
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: hidden(d, '#political'))
         check('Firefox fixture: default bundled filtering uses actual CSS', hidden(driver, '#political') and not hidden(driver, '#neutral') and not hidden(driver, '#custom'))
+        WebDriverWait(driver, 10).until(lambda d: hidden(d, '#alito'))
+        check('Firefox offline default: Politics / Justice Samuel Alito filters with no personal keywords', hidden(driver, '#alito') and hidden(driver, '#foundationPost'))
+        check('Firefox offline default: Gaming, News, FursuitFriday and sidebar stay visible', all(not hidden(driver, s) for s in ['#gaming','#news','#fursuit','#happening']))
+        driver.execute_script("document.body.insertAdjacentHTML('beforeend','<div id=liveTrend data-testid=trend><div>Politics · Trending</div><div>Unknown topic</div></div>')")
+        WebDriverWait(driver, 10).until(lambda d: hidden(d, '#liveTrend'))
+        check('Firefox: dynamically inserted political trend filters automatically', hidden(driver, '#liveTrend'))
+        driver.execute_script("document.querySelector('#liveTrend div').textContent='Gaming · Trending'")
+        WebDriverWait(driver, 10).until(lambda d: not hidden(d, '#liveTrend'))
+        check('Firefox: recycled trend reclassified Gaming becomes visible', not hidden(driver, '#liveTrend') and hidden(driver, '#alito'))
         feed = driver.current_window_handle
         driver.switch_to.new_window('tab'); driver.get(options_url)
         WebDriverWait(driver, 10).until(lambda d: d.find_element('id', 'save').is_enabled())
         settings = driver.current_window_handle
+        check('Firefox defaults use empty personal keywords and no downloaded list', extension_async(driver, 'browser.storage.local.get()') == {})
         driver.find_element('id', 'custom').send_keys('Mark Levin')
         driver.find_element('id', 'save').click()
         WebDriverWait(driver, 10).until(lambda d: 'Settings saved' in d.find_element('id', 'status').text)
@@ -140,7 +163,19 @@ with tempfile.TemporaryDirectory(prefix='nopartisan-firefox-') as work:
         driver.switch_to.window(feed)
         WebDriverWait(driver, 10).until(lambda d: hidden(d, '#dynamic'))
         check('Firefox fixture: re-enabling filters matching posts', hidden(driver, '#dynamic') and hidden(driver, '#custom'))
-        driver.switch_to.window(settings)
+        driver.execute_script("document.querySelector('#alito').previousElementSibling.querySelector('button').click()")
+        ActionChains(driver).context_click(driver.find_element('id', 'alito')).perform()
+        driver.set_context('chrome')
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return [...document.querySelectorAll('menuitem')].some(item=>item.getAttribute('label')==='NOpartisan: Why is this post visible?')"))
+        driver.execute_script("[...document.querySelectorAll('menuitem')].find(item=>item.getAttribute('label')==='NOpartisan: Why is this post visible?').doCommand(); document.getElementById('contentAreaContextMenu').hidePopup()")
+        driver.set_context('content')
+        WebDriverWait(driver, 10).until(lambda d: len(d.window_handles)>2)
+        report_tab = next(handle for handle in driver.window_handles if handle not in [feed, settings])
+        driver.switch_to.window(report_tab)
+        WebDriverWait(driver, 10).until(lambda d: d.find_element('id','state').text.startswith('{'))
+        report = json.loads(driver.find_element('id','state').text)
+        check('Firefox: actual context-menu report recognizes trend, updated build, category match and Reveal', report['candidateType']=='trend' and report['build']=='trend-foundation-1' and report['categoryMatched'] and report['revealed'] and not report['computedHidden'])
+        driver.close(); driver.switch_to.window(settings)
         extension_async(driver, "browser.permissions.remove({origins:['http://127.0.0.1/*','https://x.com/*']})")
         WebDriverWait(driver, 10).until(lambda d: 'X: Access missing' in d.find_element('id', 'siteAccess').text)
         check('Firefox fixture: denied X access is reported in settings', 'X: Access missing' in driver.find_element('id', 'siteAccess').text)
@@ -153,6 +188,14 @@ with tempfile.TemporaryDirectory(prefix='nopartisan-firefox-') as work:
         driver.refresh()
         WebDriverWait(driver, 10).until(lambda d: hidden(d, '#political'))
         check('Firefox fixture: granting access and refreshing restores injection', hidden(driver, '#political'))
+        driver.switch_to.window(settings)
+        extension_async(driver, "browser.storage.local.set({settings:{enabled:true,custom:[]},remoteList:{schemaVersion:1,version:'names-only',keywords:['A New Politician']}})")
+        driver.switch_to.window(feed); driver.refresh()
+        WebDriverWait(driver, 10).until(lambda d: hidden(d, '#foundationPost'))
+        check('Firefox: names-only remote update retains foundation and explicit political category', hidden(driver, '#foundationPost') and hidden(driver, '#alito') and not hidden(driver, '#gaming'))
+        driver.switch_to.window(settings)
+        extension_async(driver, "browser.storage.local.remove('remoteList')")
+        driver.switch_to.window(feed)
         for site in ['reddit', 'facebook']:
             driver.get(url + site + '.html')
             WebDriverWait(driver, 10).until(lambda d: hidden(d, '#political'))

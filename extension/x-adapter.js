@@ -1,7 +1,8 @@
 /* X boundaries and extraction. No network, storage, logging, or OCR. */
 (function (root) {
   const postSelector = 'article[data-testid="tweet"]';
-  const candidateSelector = `${postSelector}, [data-testid="trend"]`;
+  const trendSelector = '[data-testid="trend"]';
+  const candidateSelector = `${postSelector}, ${trendSelector}`;
   const unique = values => [...new Set(values.map(value => value.replace(/\s+/gu, ' ').trim()).filter(Boolean))];
   function readable(node) {
     return node.nodeType !== Node.ELEMENT_NODE || (!node.hidden && !/^(SCRIPT|STYLE|NOSCRIPT)$/.test(node.nodeName));
@@ -42,6 +43,16 @@
     return possible.filter(node => !possible.some(parent => parent !== node && parent.contains(node)));
   }
   function extract(post) {
+    if (post.matches(trendSelector)) {
+      // Read labels within this individual card only. A section heading or a
+      // neighboring card must never supply a category for this candidate.
+      const labels = [...post.querySelectorAll('span, div')].filter(node =>
+        !node.querySelector('div') && /^(?:(?:politics|political)(?:\s*·\s*trending)?|[^·]+\s*·\s*trending|trending(?:\s+in\s+.+)?)$/iu.test(text(node)));
+      const categoryText = unique(labels.map(node => text(node)));
+      const outerText = text(post);
+      return { candidateType: 'trend', categoryText, topicText: text(post, new Set(labels)), outerText,
+        authorText: [], quotedText: [], imageAltText: [], accessibleImageText: [], segments: unique([outerText, ...categoryText]) };
+    }
     const quotes = quoteRoots(post);
     const authors = [...post.querySelectorAll('[data-testid="User-Name"]')].filter(node => !quotes.some(quote => quote.contains(node)));
     const authorText = unique(authors.map(node => text(node)));
@@ -57,6 +68,15 @@
     while (post.parentElement?.closest(postSelector)) post = post.parentElement.closest(postSelector);
     return post;
   }
+  function findCandidate(element) {
+    return findPost(element) || element?.closest?.(trendSelector) || null;
+  }
+  function politicalCategory(extracted) {
+    // Explicit platform category, independent of vocabulary/title matching.
+    // News, gaming, entertainment and technology are not political categories.
+    return extracted.candidateType === 'trend' && extracted.categoryText.some(label =>
+      /^(?:politics|political)(?:\s*·\s*trending)?$/iu.test(label));
+  }
   function identity(post) {
     const quotes = quoteRoots(post);
     const links = [...post.querySelectorAll('a[href*="/status/"]')].filter(link => !quotes.some(quote => quote.contains(link)));
@@ -64,5 +84,5 @@
     const id = link?.getAttribute('href')?.match(/\/status\/(\d+)/u)?.[1];
     return id || post.getAttribute('data-tweet-id') || post.getAttribute('data-item-id') || null;
   }
-  root.NOpartisan.X = { postSelector, candidateSelector, extract, findPost, identity, text };
+  root.NOpartisan.X = { postSelector, trendSelector, candidateSelector, extract, findPost, findCandidate, politicalCategory, identity, text };
 })(globalThis);

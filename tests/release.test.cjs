@@ -32,6 +32,13 @@ test('signing candidate guard validates reproducibility and rejects unsafe or in
     const file = path.join(root, 'keywords/politics.json'); const data = JSON.parse(fs.readFileSync(file)); data.version = 'diverged';fs.writeFileSync(file, JSON.stringify(data));
     rejected(run, /published and bundled keyword files differ/);
   }));
+  await t.test('removing a foundational term from both feeds is rejected', () => fixture(({ root, run }) => {
+    for (const name of ['keywords/politics.json', 'extension/keywords.json']) {
+      const file = path.join(root, name); const data = JSON.parse(fs.readFileSync(file));
+      data.keywords = data.keywords.filter(term => term !== 'politics'); fs.writeFileSync(file, JSON.stringify(data));
+    }
+    rejected(run, /feed omits foundational vocabulary/);
+  }));
   await t.test('an extra ZIP entry is rejected', () => fixture(({ run, archive }) => {
     const result = run('-c', 'import zipfile,sys; z=zipfile.ZipFile(sys.argv[1], "a"); z.writestr(".env", "TEST_ONLY=placeholder"); z.close()', archive);
     assert.equal(result.status, 0, result.stderr); rejected(run, /extra\/missing\/duplicate/);

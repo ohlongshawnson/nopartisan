@@ -1,6 +1,6 @@
 const $ = id => document.getElementById(id);
 const GITHUB_PERMISSION = { origins: ['https://raw.githubusercontent.com/*'] };
-let bundledList;
+let bundledList, foundationalList;
 let saving = false;
 
 async function loadSiteAccess() {
@@ -30,12 +30,16 @@ browser.permissions.onRemoved.addListener(() => loadSiteAccess().catch(error => 
 loadSiteAccess().catch(error => { $('status').textContent = error.message; });
 
 async function load(refreshControls = true) {
-  const [stored, granted, bundled] = await Promise.all([
+  const [stored, granted, bundled, foundational] = await Promise.all([
     browser.storage.local.get(['settings', 'remoteList', 'lastUpdate', 'updateError']),
     browser.permissions.contains(GITHUB_PERMISSION),
     (async () => {
       if (!bundledList) bundledList = NOpartisan.validate(await (await fetch(browser.runtime.getURL('keywords.json'))).json());
       return bundledList;
+    })(),
+    (async () => {
+      if (!foundationalList) foundationalList = NOpartisan.validate(await (await fetch(browser.runtime.getURL('foundational.json'))).json());
+      return foundationalList;
     })()
   ]);
   const settings = { ...NOpartisan.defaults, ...stored.settings };
@@ -52,6 +56,7 @@ async function load(refreshControls = true) {
   const listSource = stored.remoteList ? 'downloaded' : 'bundled';
   const personalCount = new Set((settings.custom || []).map(NOpartisan.normalize).filter(Boolean)).size;
   const lines = [`Active list: ${listSource}, version ${activeList.version}, ${activeList.keywords.length.toLocaleString()} unique keywords.`];
+  lines.push(`${foundational.keywords.length} permanent foundational terms supplement the active list, including downloaded lists.`);
   if (personalCount) lines.push(`${personalCount.toLocaleString()} personal keywords are also active.`);
   lines.push(stored.lastUpdate ? `Last successful download: ${new Date(stored.lastUpdate).toLocaleString()}.` : 'Last successful download: None; the bundled list is ready offline.');
   if (stored.updateError) lines.push(`Latest update failed: ${stored.updateError} The previous valid list remains active.`);

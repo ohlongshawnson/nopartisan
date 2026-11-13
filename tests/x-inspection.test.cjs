@@ -13,9 +13,9 @@ async function setup() {
   let listener, changed, target;
   const stored = { settings: { enabled: true, showPlaceholders: true, custom: [], source: 'https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json' }, remoteList: published, lastUpdate: '2026-11-05T18:51:21.317Z' };
   w.console.info = (...args) => logs.push(args); w.console.error = (...args) => errors.push(args);
-  w.browser = { runtime: { id: 'test', getURL: p => p, onMessage: { addListener: fn => { listener = fn; } } },
+  w.browser = { runtime: { id: 'test', getManifest: () => ({version:'0.3.0'}), getURL: p => p, onMessage: { addListener: fn => { listener = fn; } } },
     menus: { getTargetElement: () => target }, storage: { local: { get: async () => stored }, onChanged: { addListener: fn => { changed = fn; } } } };
-  w.fetch = async () => ({ json: async () => JSON.parse(fs.readFileSync('extension/keywords.json', 'utf8')) });
+  w.fetch = async file => ({ json: async () => JSON.parse(fs.readFileSync('extension/'+file, 'utf8')) });
   for (const file of ['core.js', 'x-adapter.js', 'content.js']) w.eval(fs.readFileSync(`extension/${file}`, 'utf8'));
   await waitFor(() => w.NOpartisanDiagnostics.initialized && w.NOpartisanDiagnostics.candidates === 11);
   const $ = id => w.document.getElementById(id);
@@ -23,15 +23,15 @@ async function setup() {
     inspect: async id => { target = $(id); return JSON.parse(JSON.stringify(await listener({ type: 'inspectPost', targetElementId: 1 }, { id: 'test' }))); },
     listener: () => listener, changed: changes => changed(changes, 'local'), close: () => w.close() };
 }
-test('published-list screenshot fragments are coverage gaps; full names, quotes, authors, and accessible image descriptions match', async () => {
+test('foundational Senate term fixes a prior screenshot gap; unmatched fragments and accessible descriptions remain bounded', async () => {
   const ctx = await setup();
   try {
-    for (const id of ['rich', 'dustin', 'imageOnly', 'externalLabel', 'unrelated']) assert.equal(ctx.hidden(id), false, id);
-    for (const id of ['fullNames', 'quoteFullName', 'unknownQuote', 'authorOnly', 'altOnly', 'accessibleOnly']) assert.equal(ctx.hidden(id), true, id);
+    for (const id of ['dustin', 'imageOnly', 'externalLabel', 'unrelated']) assert.equal(ctx.hidden(id), false, id);
+    for (const id of ['rich', 'fullNames', 'quoteFullName', 'unknownQuote', 'authorOnly', 'altOnly', 'accessibleOnly']) assert.equal(ctx.hidden(id), true, id);
     assert.equal(ctx.hidden('timeline'), false); assert.equal(ctx.hidden('sidebar'), false);
     const rich = await ctx.inspect('rich');
     assert.equal(rich.list.version, published.version); assert.equal(rich.list.keywordCount, published.keywords.length);
-    assert.equal(rich.list.source, 'downloaded'); assert.equal(rich.recognized, true); assert.equal(rich.matched, false); assert.equal(rich.revealed, false);
+    assert.equal(rich.list.source, 'downloaded'); assert.equal(rich.recognized, true); assert.equal(rich.matched, true); assert.ok(rich.matchedKeywords.includes('senate')); assert.equal(rich.revealed, false);
     assert.match(rich.extracted.authorText.join(' '), /Rich Neumeister/);
     assert.match(rich.extracted.quotedText.join(' '), /Klobuchar\/Walz/);
     assert.doesNotMatch(rich.extracted.outerText, /Klobuchar|Neumeister/);

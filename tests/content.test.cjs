@@ -32,7 +32,7 @@ test('fresh offline installation filters from the complete bundled list', async 
  const dom = new JSDOM('<body><article data-testid="tweet">Donald J. Trump spoke today</article></body>', {url:'https://x.com/home',runScripts:'outside-only'});
  const w = dom.window;
  w.browser = {runtime:{id:'test',onMessage:{addListener(){}},getURL:p=>`moz-extension://test/${p}`},storage:{local:{get:async()=>({})},onChanged:{addListener(){}}}};
- w.fetch = async url => ({json:async()=>JSON.parse(fs.readFileSync(url.endsWith('keywords.json')?'extension/keywords.json':url,'utf8'))});
+ w.fetch = async url => ({json:async()=>JSON.parse(fs.readFileSync(url.startsWith('moz-extension://test/')?'extension/'+url.split('/').pop():url,'utf8'))});
  w.eval(fs.readFileSync('extension/core.js','utf8')); w.eval(fs.readFileSync('extension/x-adapter.js','utf8')); w.eval(fs.readFileSync('extension/content.js','utf8'));
  try {
   await waitFor(()=>w.document.querySelector('article').classList.contains('nopartisan-filtered'));

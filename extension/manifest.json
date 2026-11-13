@@ -62,7 +62,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "keywords.json"
+        "keywords.json",
+        "foundational.json"
       ],
       "matches": [
         "https://www.reddit.com/*",
