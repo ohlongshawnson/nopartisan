@@ -22,7 +22,7 @@ test('Mike Lee: exact phrase, mixed case, author, quoted content, duplicate keyw
     for (const id of ['neutral', 'neutralTrend', 'timeline', 'sidebar', 'search']) assert.equal(hidden(w, id), false, id);
     assert.equal(w.document.querySelectorAll('.nopartisan-notice').length, 6);
     assert.equal(w.document.querySelector('#nestedQuote article').classList.contains('nopartisan-filtered'), false);
-    assert.deepEqual(JSON.parse(JSON.stringify(w.NOpartisanDiagnostics)), { build: 'post-inspection-1', initialized: true, enabled: true, keywordCount: 12, candidates: 8, matched: 6, hidden: 6, runtimeErrors: 0 });
+    assert.deepEqual(JSON.parse(JSON.stringify(w.NOpartisanDiagnostics)), { build: 'trend-foundation-1', initialized: true, enabled: true, keywordCount: 12, candidates: 8, matched: 6, hidden: 6, runtimeErrors: 0 });
     assert.equal(ctx.errors.length, 0);
   } finally { ctx.close(); }
 });
@@ -73,7 +73,7 @@ test('manifest makes the fetched bundled list accessible on every supported orig
   const entry = manifest.web_accessible_resources.find(entry => entry.resources.includes('keywords.json'));
   assert.ok(entry, 'Firefox MV3 blocks the packaged-file fetch without this declaration');
   assert.deepEqual(entry.matches, manifest.content_scripts[0].matches);
-  assert.deepEqual(entry.resources, ['keywords.json']);
+  assert.deepEqual(entry.resources, ['keywords.json', 'foundational.json']);
   assert.deepEqual(manifest.content_scripts[0].js, ['core.js', 'x-adapter.js', 'content.js']);
   assert.ok(manifest.host_permissions.includes('https://x.com/*'));
 });

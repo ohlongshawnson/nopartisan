@@ -170,6 +170,17 @@ class PublisherTests(unittest.TestCase):
         self.assertEqual(output2, output)
         self.assertEqual(added, [])
 
+    def test_foundational_vocabulary_survives_collected_name_updates(self):
+        foundation = json.loads((Path(__file__).parents[2] / 'keywords/foundational.json').read_text())['keywords']
+        base = p.encode({'schemaVersion': 1, 'version': 'foundation', 'keywords': foundation})
+        output, added = q.merge(base, [{'phrase': 'Amy Klobuchar'}])
+        result = json.loads(output)
+        self.assertEqual(result['schemaVersion'], 1)
+        self.assertTrue(set(foundation).issubset(result['keywords']))
+        self.assertIn('amy klobuchar', added)
+        output, _ = q.merge(output, [{'phrase': 'Maria Cantwell'}])
+        self.assertTrue(set(foundation).issubset(json.loads(output)['keywords']))
+
     def test_malformed_or_empty_merge(self):
         for candidates in [[], [{'phrase': 'Trump'}], [{'phrase': 'A\x00 B'}]]:
             with self.assertRaises(ValueError):

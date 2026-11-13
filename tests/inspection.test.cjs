@@ -7,7 +7,7 @@ const pause = () => new Promise(resolve => setTimeout(resolve, 30));
 test('context menu requests only the selected frame; post report goes only to session memory and a local URL', async () => {
   let clicked, request, created, registration; const installed = [], session = {};
   const report = { recognized: true, extracted: { outerText: 'PRIVATE_POST_SENTINEL' } };
-  const browser = {
+  const browser = { permissions: {onAdded:{addListener(){}}},
     runtime: { id: 'test', getURL: path => `moz-extension://test/${path}`, onInstalled: { addListener: fn => installed.push(fn) }, onStartup: { addListener() {} }, onMessage: { addListener() {} } },
     menus: { remove: async () => {}, create: data => { registration = data; }, onClicked: { addListener: fn => { clicked = fn; } } },
     storage: { local: { get: async () => { throw new Error('Diagnostic should not read or write local disk storage'); } }, session: { set: async value => Object.assign(session, value) }, onChanged: { addListener() {} } },

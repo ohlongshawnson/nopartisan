@@ -1,0 +1,14 @@
+NOpartisan 0.3.1
+
+Automatic political filtering with permanent foundational vocabulary and
+individual X Politics-category detection. Fresh installations filter offline
+immediately, retrieve validated GitHub keywords automatically and check daily.
+Existing settings, cached lists, custom sources and update opt-outs are retained.
+
+Installation-time HTTPS raw.githubusercontent.com permission supports data-only
+keyword updates. Feed content and personal keywords are not uploaded.
+
+Final user acceptance: automatic download, authenticated X filtering, signed
+installation and Firefox restart passed. See release notes for automated evidence.
+
+Create this tag only on the reviewed final merged main commit.

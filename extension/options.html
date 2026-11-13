@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NOpartisan settings</title><link rel="stylesheet" href="options.css"></head>
 <body><main><header class="brand"><img src="Blue NOP Tech Logo.png" width="80" height="80" alt=""><div><h1>NOpartisan</h1><p class="tagline">No left. No right. No thanks.</p></div></header>
-<section class="card intro"><h2>Your political filters are ready</h2><p>NOpartisan filters with its complete bundled list right away and works offline. Feed text and your personal keywords stay on this device.</p></section>
+<section class="card intro"><h2>Automatic political filtering</h2><p>NOpartisan includes a permanent political vocabulary and filters X trends explicitly categorized as Politics. No personal keywords, download or GitHub access are needed for these default filters. Optional extra phrases can extend coverage. Feed text and your personal keywords stay on this device.</p></section>
+<section class="card"><h2>Website access</h2><p>Firefox must allow NOpartisan to read and change each supported website before it can filter there. Grant access below, then refresh any already-open tabs. You can revoke access in Firefox's add-on permissions. Update-service access is separate from these feed websites.</p><div id="siteAccess" role="status" aria-live="polite"></div></section>
 <form id="settings">
 <section class="card"><h2>Filtering</h2>
 <label><input type="checkbox" id="enabled"> Enable filtering</label>
@@ -11,15 +12,15 @@
 <p>Matches whole words and phrases, regardless of case. Broad terms can hide unrelated posts.</p></section>
 
 <section class="card updates"><h2>Filter list updates</h2>
-<p>Optional downloads bring the latest reviewed list from GitHub. GitHub receives ordinary connection details, such as your IP address, when you download. Feed content and personal keywords are never sent.</p>
+<p>New installations automatically get updated political keywords from GitHub after installation and every 24 hours while Firefox is running. GitHub receives ordinary connection details, including your IP address and the requested file address. Feed content and personal keywords are never sent. Turn automatic updates off below at any time; local filtering will continue.</p>
 <label><input id="autoUpdate" type="checkbox"> Keep political filters updated</label>
-<p>When enabled, Firefox checks daily while it is running. Save settings to approve optional GitHub access.</p>
+<p>Included filters work immediately and offline. Failed downloads keep your current filters and retry later. Existing update preferences are preserved.</p>
 <button type="button" id="update" disabled>Update filters now</button>
 <div id="listInfo" role="status" aria-live="polite"></div>
 </section>
 
 <details class="card advanced"><summary>Advanced update source</summary>
-<p>The maintained NOpartisan list is used by default. Change this only if you maintain another list in the supported schema. Leave blank to restore the default source.</p>
+<p>The maintained NOpartisan list is used by default. Existing custom sources are preserved. Newly configured sources must use the maintained list. Leave blank to restore the default source.</p>
 <label for="source">Keyword list URL</label><input id="source" type="url" spellcheck="false" placeholder="https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json">
 </details>
 

@@ -4,6 +4,8 @@ import json
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 root = Path(__file__).resolve().parents[1]
 assert (root/'keywords/politics.json').read_bytes() == (root/'extension/keywords.json').read_bytes(), 'Bundled keyword list differs from canonical list'
+assert (root/'keywords/foundational.json').read_bytes() == (root/'extension/foundational.json').read_bytes(), 'Foundational copies differ'
+assert set(json.loads((root/'keywords/foundational.json').read_text())['keywords']).issubset(json.loads((root/'keywords/politics.json').read_text())['keywords']), 'Canonical feed omits foundational terms'
 version = json.loads((root/'extension/manifest.json').read_text())['version']
 out = root/f'dist/nopartisan-{version}.zip'
 out.parent.mkdir(exist_ok=True)

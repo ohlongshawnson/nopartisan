@@ -8,16 +8,20 @@ A privacy-focused Firefox extension that filters political feed posts regardless
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Choose **Load Temporary Add-on** and select `extension/manifest.json`.
-3. Filtering starts immediately with the bundled list. Click the NOpartisan toolbar action for quick filtering and placeholder toggles, or open full settings to manage personal phrases and optional updates.
-4. Visit a supported feed and grant the requested site access. Reload existing tabs after installation.
+3. Setup opens on first installation. Check **Website access** and grant access to each site you use; refresh already-open tabs. The bundled keyword list needs no download. Click the NOpartisan toolbar action for quick filtering and placeholder toggles, or open full settings to manage personal phrases and update preferences.
+4. Visit a supported feed. Only listed words and phrases match; a political item without an active phrase can remain visible. Add a missing phrase under personal keywords and save to update open tabs.
 
 Temporary add-ons disappear when Firefox restarts. Release distribution requires Mozilla signing; the generated ZIP is unsigned. The permanent extension ID is `nopartisan@ohlongshawnson.github.io`. See [unlisted signing and test installation](docs/firefox-signing.md) before replacing the old temporary development install.
 
 Filtering matches whole words and phrases without case sensitivity, with Unicode normalization and whitespace folding. A placeholder lets you reveal each hidden post. Turning filtering off restores posts. User keywords supplement the active bundled or downloaded list. Text inside images and video is not analyzed. Site DOM changes may break adapters; authenticated live feeds have not yet been verified.
 
+See [the Firefox 0.3.0 investigation](docs/firefox-030-regression.md) for signed-package tests, permission checks, and the remaining live-site acceptance checks.
+
 ## Keyword updates
 
-Open full settings and choose **Update filters now** or enable **Keep political filters updated** for daily checks while Firefox is running. Firefox requests optional GitHub access after that user action; declining leaves filtering and the full bundled list available offline. The maintained default source is `https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json`. Its URL is available under **Advanced update source** for maintainers who need a custom list. Existing custom sources and update opt-outs are preserved.
+New installations enable automatic updates: bundled rules filter immediately, then NOpartisan downloads the maintained keyword list and checks again every 24 hours while Firefox is running. Firefox presents access to `raw.githubusercontent.com` during installation. A missing/revoked grant, unavailable connection, or invalid download leaves local filtering working and retries after an hour. Open settings to turn automatic updates off or choose **Update filters now**.
+
+Existing preferences are preserved on upgrade, including explicit opt-outs and legacy installations without an update choice (which remain off). Existing saved custom sources remain usable; newly configured sources are restricted to the maintained URL, `https://raw.githubusercontent.com/ohlongshawnson/nopartisan/main/keywords/politics.json`. Each validated download is merged with the permanent local foundation before it is atomically cached. Settings show current, foundation and downloaded counts plus update status, last success/error and the next check.
 
 GitHub receives ordinary connection information, including the user's IP address and requested list URL. Feed content, browsing history, personal keywords, and matched phrases are never sent. Redirects, oversized responses, and malformed lists fail without replacing the last valid list. Both published JSON files use schema 1 and are synchronized by the publisher.
 
@@ -37,7 +41,7 @@ npm run build
 npm run check:release
 ```
 
-Build output: `dist/nopartisan-0.3.0.zip`. Development dependencies are never included in the extension. On the initial workstation, Node is locally installed under `~/.local/share/nopartisan-tools/current/bin`; add that directory to PATH for these commands.
+Build output: `dist/nopartisan-0.3.1.zip`. Development dependencies are never included in the extension. On the initial workstation, Node is locally installed under `~/.local/share/nopartisan-tools/current/bin`; add that directory to PATH for these commands.
 
 Pure matching and validation live in `extension/core.js`; `content.js` handles site adapters and dynamic posts; `background.js` handles updates; `options.*` contains settings. Tests exercise matching, remote source validation, and feed lifecycle behavior.
 
@@ -84,6 +88,6 @@ Reports are generated only on request. Their text is passed through internal ext
 
 X filtering includes existing image alt text and accessible image descriptions. It does **not** read pixels, perform OCR, or classify the political meaning of a post. Full names separated by `/` match existing whole-word rules; surname-only references do not match a full-name keyword. See [the expanded-list investigation](docs/x-expanded-list-investigation.md) for evidence and coverage gaps.
 
-## First signed test release
+## Next Mozilla release candidate
 
-Version **0.3.0** is prepared for Mozilla’s **unlisted / self-distributed** signing route. The generated ZIP is unsigned until Mozilla signs it. [Release notes](docs/releases/0.3.0.md), [submission steps and reviewer notes](docs/firefox-signing.md), and [store listing copy](docs/mozilla-listing.md) describe the package and privacy behavior. No extension-binary update server is configured; keyword downloads are a separate mechanism.
+Version **0.3.1** is prepared locally for the existing Mozilla Add-ons listing. The generated ZIP is unsigned until Mozilla signs it. [Release notes](docs/releases/0.3.1.md), [submission steps](docs/firefox-signing.md), and [store listing copy](docs/mozilla-listing.md) describe the package and privacy behavior. Keyword data downloads are separate from Mozilla extension-binary updates. Nothing is published by the build commands.
